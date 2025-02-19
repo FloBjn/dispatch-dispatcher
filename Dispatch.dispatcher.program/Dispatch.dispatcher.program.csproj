@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Dispatch.dispatcher.app</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Dispatch.disapatcher.model\Dispatch.disapatcher.model.csproj" />
+      <ProjectReference Include="..\Dispatch.dispatcher.presenter\Dispatch.dispatcher.presenter.csproj" />
+      <ProjectReference Include="..\Dispatch.dispatcher.view\Dispatch.dispatcher.view.csproj" />
+    </ItemGroup>
+
+</Project>
