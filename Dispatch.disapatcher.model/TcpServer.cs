@@ -56,7 +56,7 @@ public class TcpServer(int port)
                     if (bytesRead == 0) break; // Client déconnecté
 
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Console.WriteLine($"Message reçu : {message}");
+                    Console.WriteLine($"🔍 Message brut : [{message}]");
 
                     // Optionnel : Répondre au client
                     const string response = "Message bien reçu!";
