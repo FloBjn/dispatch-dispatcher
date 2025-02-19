@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Dispatch.disapatcher.model\Dispatch.disapatcher.model.csproj" />
+      <ProjectReference Include="..\Dispatch.dispatcher.infrastructure\Dispatch.dispatcher.infrastructure.csproj" />
       <ProjectReference Include="..\Dispatch.dispatcher.presenter\Dispatch.dispatcher.presenter.csproj" />
       <ProjectReference Include="..\Dispatch.dispatcher.view\Dispatch.dispatcher.view.csproj" />
     </ItemGroup>

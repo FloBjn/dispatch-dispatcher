@@ -1,4 +1,5 @@
 ﻿using Dispatch.disapatcher.model;
+using Dispatch.dispatcher.infrastructure;
 using Dispatch.dispatcher.presenter;
 using Dispatch.dispatcher.view;
 
@@ -8,7 +9,8 @@ public class Program
 {
     public static void Main()
     {
-        var server = new TcpServer(1234);
+        UserManager userManager = new UserManager();
+        var server = new TcpServer(1234, userManager);
         IMainView view = new View();
         var presenter = new Presenter(view, server);
         

@@ -1,0 +1,9 @@
+﻿{
+  "users": [
+    {
+      "username": "test",
+      "password_hash": "hash_sha3_384",
+      "aes_key": "base64_aes_key"
+    }
+  ]
+}
