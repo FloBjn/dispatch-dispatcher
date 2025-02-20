@@ -52,6 +52,7 @@ namespace Dispatch.dispatcher.infrastructure
                 return;
             }
 
+            newUser.PasswordHash = PasswordHasher.HashPassword(newUser.PasswordHash);
             users.Add(newUser);
             SaveUsers();
             Console.WriteLine($"✅ Utilisateur {newUser.Username} ajouté avec succès !");
