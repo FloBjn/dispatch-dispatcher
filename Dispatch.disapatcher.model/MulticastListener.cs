@@ -44,7 +44,7 @@ public class MulticastListener
 
                     Console.WriteLine($"Message reçu : {message}");
 
-                    // Vérification si c'est un message ALIVE avec le protocole
+                    // Vérification du message ALIVE avec le protocole
                     if (DispatcherProtocol.ParseAlive(message) is (string containerName, int tcpPort))
                     {
                         string containerIp = result.RemoteEndPoint.Address.ToString();
