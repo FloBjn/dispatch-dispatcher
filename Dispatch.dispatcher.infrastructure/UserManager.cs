@@ -57,7 +57,22 @@ namespace Dispatch.dispatcher.infrastructure
             SaveUsers();
             Console.WriteLine($"✅ Utilisateur {newUser.Username} ajouté avec succès !");
         }
+        
+        public User? VerifyUser(string username, string password)
+        {
+            User? user = users.Find(u => u.Username == username);
+            if (user == null) return null;
 
+            string hashedPassword = PasswordHasher.HashPassword(password);
+            if (user.PasswordHash == hashedPassword)
+            {
+                return user;
+            }
+            else
+            {
+                return null;
+            }
+        }
         /// <summary>
         /// Sauvegarde la liste des utilisateurs dans le fichier JSON.
         /// </summary>
