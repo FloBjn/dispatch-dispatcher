@@ -13,14 +13,14 @@ public class Program
     public static void Main()
     {
         // Gestion des utilisateurs
-        UserManager userManager = new UserManager();
+        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager());
 
         // Serveur TCP qui écoute les clients
-        var server = new TcpServer(1234, userManager);
+        var server = new TcpServer(1234);
 
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server);
+        var presenter = new Presenter(view, server, analyser);
 
         // Démarrer l'écoute multicast 
         MulticastListener multicastListener = new MulticastListener();

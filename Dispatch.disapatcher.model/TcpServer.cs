@@ -4,15 +4,16 @@ using System.Text;
 
 namespace Dispatch.disapatcher.model;
 
-public class TcpServer(int port, IUserManager userManager)
+public class TcpServer(int port)
 {
-    private ClientMessageAnalyser _clientMessageAnalyser;
     private TcpListener? _listener;
     private bool _isRunning;
 
-    /**
-     * Méthode pour démarrer le serveur.
-     */
+    public event Func<string, Task<string>>? OnMessageReceived; // Événement pour transmettre le message au Presenter
+
+    /// <summary>
+    /// Démarre le serveur TCP et écoute les connexions entrantes.
+    /// </summary>
     public async Task StartAsync()
     {
         _listener = new TcpListener(IPAddress.Any, port);
@@ -24,33 +25,21 @@ public class TcpServer(int port, IUserManager userManager)
         {
             var client = await _listener.AcceptTcpClientAsync();
             Console.WriteLine("Client connecté!");
-            _ = HandleClientAsync(client); // Gérer chaque client dans une tâche séparée
+            _ = HandleClientAsync(client);
         }
     }
-    
-    /**
-     * Méthode pour arrêter le serveur.
-     */
-    public void Stop()
-    {
-        _isRunning = false;
-        _listener?.Stop();
-        Console.WriteLine("Serveur arrêté.");
-    }
 
-    
-    /**
-     * Méthode pour gérer un client.
-     */
+    /// <summary>
+    /// Gère les messages reçus d'un client.
+    /// </summary>
+    /// <param name="client"></param>
     private async Task HandleClientAsync(TcpClient client)
     {
-        using (client) // Fermer automatiquement la connexion
+        using (client)
         {
             NetworkStream stream = client.GetStream();
             byte[] buffer = new byte[1024];
-            
-            _clientMessageAnalyser = new ClientMessageAnalyser(userManager);
-            
+
             try
             {
                 while (true)
@@ -61,16 +50,15 @@ public class TcpServer(int port, IUserManager userManager)
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     Console.WriteLine($"🔍 Message brut : [{message}]");
 
-                    String clientMessage = _clientMessageAnalyser.Analyse(message);
-                    if (!String.IsNullOrEmpty(clientMessage))
+                    if (OnMessageReceived != null)
                     {
-                        var responseBytes = Encoding.UTF8.GetBytes(clientMessage);
+                        string response = await OnMessageReceived.Invoke(message);
+                        byte[] responseBytes = Encoding.UTF8.GetBytes(response);
                         await stream.WriteAsync(responseBytes);
                     }
                     else
                     {
-                        var responseBytes = Encoding.UTF8.GetBytes("Erreur lors de l'inscription");
-                        await stream.WriteAsync(responseBytes);
+                        Console.WriteLine("Aucun gestionnaire de message défini.");
                     }
                 }
             }
@@ -81,5 +69,15 @@ public class TcpServer(int port, IUserManager userManager)
         }
 
         Console.WriteLine("Client déconnecté.");
+    }
+
+    /// <summary>
+    /// Stoppe le serveur TCP.
+    /// </summary>
+    public void Stop()
+    {
+        _isRunning = false;
+        _listener?.Stop();
+        Console.WriteLine("Serveur arrêté.");
     }
 }
