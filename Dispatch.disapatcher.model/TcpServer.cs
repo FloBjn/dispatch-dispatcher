@@ -61,12 +61,17 @@ public class TcpServer(int port, IUserManager userManager)
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     Console.WriteLine($"🔍 Message brut : [{message}]");
 
-                    _clientMessageAnalyser.Analyse(message);
-                    
-                    // Optionnel : Répondre au client
-                    const string response = "Message bien reçu!";
-                    var responseBytes = Encoding.UTF8.GetBytes(response);
-                    await stream.WriteAsync(responseBytes);
+                    String clientMessage = _clientMessageAnalyser.Analyse(message);
+                    if (!String.IsNullOrEmpty(clientMessage))
+                    {
+                        var responseBytes = Encoding.UTF8.GetBytes(clientMessage);
+                        await stream.WriteAsync(responseBytes);
+                    }
+                    else
+                    {
+                        var responseBytes = Encoding.UTF8.GetBytes("Erreur lors de l'inscription");
+                        await stream.WriteAsync(responseBytes);
+                    }
                 }
             }
             catch (Exception ex)

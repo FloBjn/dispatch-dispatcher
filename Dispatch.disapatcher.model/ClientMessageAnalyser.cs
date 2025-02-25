@@ -7,6 +7,7 @@
     public class ClientMessageAnalyser
     {
         private readonly IUserManager _userManager;
+        private User _connectedUser;
 
         /// <summary>
         /// Initialise une nouvelle instance de `ClientMessageAnalyser` avec un gestionnaire d'utilisateurs.
@@ -23,13 +24,21 @@
         /// Si le message correspond à `REGISTER`, il enregistre un nouvel utilisateur.
         /// </summary>
         /// <param name="message">Le message client à analyser.</param>
-        public void Analyse(string message)
+        public String Analyse(string message)
         {
             // 🔍 Vérification d'une tentative de connexion
             if (DispatcherProtocol.ParseLogin(message) is (string username, string password))
             {
-                Console.WriteLine($"🔑 Tentative de connexion : {username}, Password : {password}");
-                // 🚧 TODO : Ajouter l'authentification de l'utilisateur
+                Console.WriteLine($"🔑 Tentative de connexion : {username}");
+                if (_userManager.VerifyUser(username, password) != null)
+                {
+                    _connectedUser = _userManager.VerifyUser(username, password);
+                    return DispatcherProtocol.BuildLoginOk();
+                }
+                else
+                {
+                    return DispatcherProtocol.BuildLoginEr();
+                }
             }
 
             // 🔍 Vérification d'une tentative d'inscription
@@ -38,16 +47,23 @@
                 Console.WriteLine($"🆕 Tentative d'enregistrement : {newUser}, Password : {newPassword}");
 
                 // Création d'un nouvel utilisateur
-                User user = new User
+                _connectedUser = new User
                 {
                     Username = newUser,
-                    PasswordHash = newPassword, // 🚧 TODO : Hacher le mot de passe avec SHA3-384
+                    PasswordHash = newPassword, 
                     AesKey = AesKeyGenerator.GenerateAesKey()
                 };
 
                 // Ajout de l'utilisateur au fichier JSON
-                _userManager.AddUser(user);
+                _userManager.AddUser(_connectedUser);
             }
+
+            if (String.IsNullOrEmpty(DispatcherProtocol.ParseCatalogue(message)))
+            {
+                // TODO : récupéré les fichiers du client connecté avec _connectedUser
+            }
+
+            return String.Empty;
         }
     }
 }
