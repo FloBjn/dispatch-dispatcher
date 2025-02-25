@@ -22,6 +22,7 @@
         /// Analyse un message client et déclenche l'action correspondante.
         /// Si le message correspond à une commande `LOGIN`, il tente une authentification.
         /// Si le message correspond à `REGISTER`, il enregistre un nouvel utilisateur.
+        /// Si le message correspond à 'UPLOAD', il ????????
         /// </summary>
         /// <param name="message">Le message client à analyser.</param>
         public String Analyse(string message)
@@ -56,6 +57,14 @@
 
                 // Ajout de l'utilisateur au fichier JSON
                 _userManager.AddUser(_connectedUser);
+            }
+            
+            // 🔍 Vérification d'une tentative d'upload
+            if (DispatcherProtocol.ParseUpload(message) is (string fileName, int size))
+            {
+                Console.WriteLine($"Tentative d'upload du fichier : {fileName}, taille : {size}");
+                
+                //Chiffrement du fichier (nom et contenu)
             }
 
             if (String.IsNullOrEmpty(DispatcherProtocol.ParseCatalogue(message)))
