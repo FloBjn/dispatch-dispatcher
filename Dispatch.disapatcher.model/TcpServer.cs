@@ -4,8 +4,9 @@ using System.Text;
 
 namespace Dispatch.disapatcher.model;
 
-public class TcpServer(int port)
+public class TcpServer(int port, IUserManager userManager)
 {
+    private ClientMessageAnalyser _clientMessageAnalyser;
     private TcpListener? _listener;
     private bool _isRunning;
 
@@ -47,7 +48,9 @@ public class TcpServer(int port)
         {
             NetworkStream stream = client.GetStream();
             byte[] buffer = new byte[1024];
-
+            
+            _clientMessageAnalyser = new ClientMessageAnalyser(userManager);
+            
             try
             {
                 while (true)
@@ -58,6 +61,8 @@ public class TcpServer(int port)
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     Console.WriteLine($"🔍 Message brut : [{message}]");
 
+                    _clientMessageAnalyser.Analyse(message);
+                    
                     // Optionnel : Répondre au client
                     const string response = "Message bien reçu!";
                     var responseBytes = Encoding.UTF8.GetBytes(response);

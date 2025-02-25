@@ -18,7 +18,7 @@ namespace Dispatch.disapatcher.model
         private const string Username = $"(?<username>{LetterDigit}{{5,20}})";
         private const string Password = $"(?<password>{CarPass}{{5,50}})";
         private const string Filename = $"(?<filename>{CarPass}{{1,20}})";
-        private const string Domain = $"(?<domain>{LetterDigit}{{5,20}}(\\.{LetterDigit}{{5,20}})?)";
+        private const string Domain = $"(?<domain>{LetterDigit}{{5,20}}\\.)";
         private const string Port = $"(?<port>[0-9]{{1,5}})";
         private const string Size = $"(?<size>[0-9]{{1,10}})";
         private const string HashFilename = $"(?<hash_filename>{Hash})";
@@ -177,5 +177,15 @@ namespace Dispatch.disapatcher.model
         }
 
         private static bool IsValid(string value, string pattern) => Regex.IsMatch(value, $"^{pattern}$");
+
+        public static string BuildLoginOk()
+        {
+            return "LOGIN_OK\r\n";
+        }
+
+        public static string BuildLoginEr()
+        {
+            return "LOGIN_ERROR\r\n";
+        }
     }
 }
