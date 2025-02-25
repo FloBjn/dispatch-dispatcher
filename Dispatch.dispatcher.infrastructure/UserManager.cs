@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Dispatch.disapatcher.model;
+using File = System.IO.File;
 
 namespace Dispatch.dispatcher.infrastructure
 {

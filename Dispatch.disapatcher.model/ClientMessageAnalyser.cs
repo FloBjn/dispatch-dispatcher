@@ -62,9 +62,11 @@
             // 🔍 Vérification d'une tentative d'upload
             if (DispatcherProtocol.ParseUpload(message) is (string fileName, int size))
             {
-                Console.WriteLine($"Tentative d'upload du fichier : {fileName}, taille : {size}");
+                //TODO récupérer l'utilisateur pour le lier avec le fichier via le fileManager 
                 
-                //Chiffrement du fichier (nom et contenu)
+                Console.WriteLine($"Tentative d'upload du fichier : {fileName}, taille : {size}");
+
+                return "UPLOAD";
             }
 
             if (String.IsNullOrEmpty(DispatcherProtocol.ParseCatalogue(message)))

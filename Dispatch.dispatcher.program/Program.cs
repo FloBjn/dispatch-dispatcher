@@ -14,13 +14,16 @@ public class Program
     {
         // Gestion des utilisateurs
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager());
+        
+        // Chiffrage des données des fichiers
+        FileEncryptor encryptor = new FileEncryptor();
 
         // Serveur TCP qui écoute les clients
         var server = new TcpServer(1234);
 
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server, analyser);
+        var presenter = new Presenter(view, server, analyser, encryptor);
 
         // Démarrer l'écoute multicast 
         MulticastListener multicastListener = new MulticastListener();
