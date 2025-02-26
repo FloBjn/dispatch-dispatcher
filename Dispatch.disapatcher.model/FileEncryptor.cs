@@ -5,16 +5,11 @@ namespace Dispatch.disapatcher.model;
 
 public class FileEncryptor
 {
-    public string Encrypte(OurFile ourFile/*, User user, string content*/)    //Besoin du User pour sa clé AES
-                                                                              //Besoin du contenu pour évité une faille
+    public void Encrypte(OurFile ourFile, string content) 
     {
-        //TODO Vérifier si cette méthode n'a pas des failles de sécurité
-        //TODO Récupérer l'aes key de l'utilisateur 
-        var aes = Convert.FromBase64String(AesKeyGenerator.GenerateAesKey());
+        var aes = Convert.FromBase64String(ourFile.User.AesKey);
         
-        (ourFile.EncryptedContent, ourFile.Tag) = EncryptAESGCM(ourFile.Content, aes, ourFile.Iv, ourFile.Aad);
-        
-        return String.Empty;
+        (ourFile.EncryptedContent, ourFile.Tag) = EncryptAESGCM(content, aes, ourFile.Iv, ourFile.Aad);
     }
     
     private (byte[] encryptedText, byte[] tag) EncryptAESGCM(string text, byte[] aesKey, byte[] iv, byte[] aad)

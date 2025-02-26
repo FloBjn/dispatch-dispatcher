@@ -3,5 +3,5 @@
 public interface IFileManager
 {
     public void SaveFile(OurFile ourFile);
-    public void Encrypte(OurFile ourFile);
+    public void Encrypte(OurFile ourFile, string content);
 }

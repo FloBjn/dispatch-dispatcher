@@ -45,7 +45,7 @@ public class OurFile
         Tag = new byte[16];
         using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
         {
-            Iv = new byte[10];
+            Iv = new byte[12];
             rng.GetBytes(Iv);
         }
     }

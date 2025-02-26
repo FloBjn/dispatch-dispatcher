@@ -24,10 +24,10 @@ public class FileManager : IFileManager
         File.WriteAllText(FilePath, ToJson(ourFile));
     }
 
-    public void Encrypte(OurFile ourFile)
+    public void Encrypte(OurFile ourFile, string content)
     {
         //Cohérent avec SOLID?
-        //TODO Utiliser le fileEncryptor
+        encryptor.Encrypte(ourFile, content);
     }
 
     /// <summary>

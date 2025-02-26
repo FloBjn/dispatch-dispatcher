@@ -68,29 +68,26 @@
             // 🔍 Vérification d'une tentative d'upload
             if (DispatcherProtocol.ParseUpload(message) is (string fileName, int size))
             {
-                //TODO récupérer l'utilisateur pour le lier avec le fichier via le fileManager 
-                
                 Console.WriteLine($"Tentative d'upload du fichier : {fileName}, taille : {size}");
                 
                 _currentOurFile = new OurFile
                 {
                     FileName = fileName,
                     FileSize = size,
-                    //TODO récupérer l'utilisateur qui upload le fichier pour avoir sa clé AES --> into cryptage
+                    User = _connectedUser
                 };
 
                 _fileUploadRequest = true;
             }
-            
-            /*TODO SORTIR DANS UNE AUTRE CLASSE DU MODEL*/
         
             //Chiffrement des données du fichier UPLOAD si le cas à été détecté à la dernière analyse
             if (_fileUploadRequest)
             {
-                _currentOurFile.Content = message;
-                _fileManager.Encrypte(_currentOurFile);
-                //TODO Envoyer le fichier une fois chiffrer grace au fileManager
+                _fileManager.Encrypte(_currentOurFile, message);
                 _fileManager.SaveFile(_currentOurFile);
+                
+                //TODO Envoyer le fichier aux container
+                
                 _fileUploadRequest = false;
                 _currentOurFile = null;
             }
