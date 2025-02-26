@@ -12,11 +12,12 @@ public class Program
 {
     public static void Main()
     {
-        // Gestion des utilisateurs
-        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager());
         
         // Gestion des fichiers 
         IFileManager fileManager = new FileManager(new FileEncryptor());
+        
+        // Gestion des utilisateurs
+        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(), fileManager);
 
         // Serveur TCP qui écoute les clients
         var server = new TcpServer(1234);

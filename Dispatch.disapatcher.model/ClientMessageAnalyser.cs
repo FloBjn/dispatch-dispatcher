@@ -8,14 +8,20 @@
     {
         private readonly IUserManager _userManager;
         private User _connectedUser;
+        
+        private bool _fileUploadRequest = false;
+        
+        private IFileManager _fileManager;
+        private OurFile _currentOurFile = null;
 
         /// <summary>
         /// Initialise une nouvelle instance de `ClientMessageAnalyser` avec un gestionnaire d'utilisateurs.
         /// </summary>
         /// <param name="userManager">Instance de `IUserManager` permettant la gestion des utilisateurs.</param>
-        public ClientMessageAnalyser(IUserManager userManager)
+        public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager)
         {
             _userManager = userManager;
+            _fileManager = fileManager;
         }
 
         /// <summary>
@@ -65,8 +71,28 @@
                 //TODO récupérer l'utilisateur pour le lier avec le fichier via le fileManager 
                 
                 Console.WriteLine($"Tentative d'upload du fichier : {fileName}, taille : {size}");
+                
+                _currentOurFile = new OurFile
+                {
+                    FileName = fileName,
+                    FileSize = size,
+                    //TODO récupérer l'utilisateur qui upload le fichier pour avoir sa clé AES --> into cryptage
+                };
 
-                return "UPLOAD";
+                _fileUploadRequest = true;
+            }
+            
+            /*TODO SORTIR DANS UNE AUTRE CLASSE DU MODEL*/
+        
+            //Chiffrement des données du fichier UPLOAD si le cas à été détecté à la dernière analyse
+            if (_fileUploadRequest)
+            {
+                _currentOurFile.Content = message;
+                _fileManager.Encrypte(_currentOurFile);
+                //TODO Envoyer le fichier une fois chiffrer grace au fileManager
+                _fileManager.SaveFile(_currentOurFile);
+                _fileUploadRequest = false;
+                _currentOurFile = null;
             }
 
             if (String.IsNullOrEmpty(DispatcherProtocol.ParseCatalogue(message)))
