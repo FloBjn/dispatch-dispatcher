@@ -1,12 +1,11 @@
 ﻿using Dispatch.disapatcher.model;
-using File = Dispatch.disapatcher.model.File;
 
 namespace Dispatch.dispatcher.presenter;
 
-public class Presenter(IMainView view, TcpServer server, ClientMessageAnalyser analyser, FileEncryptor fileEncryptor)
+public class Presenter(IMainView view, TcpServer server, ClientMessageAnalyser analyser, IFileManager fileManager)
 {
     private bool fileUploadRequest = false;
-    private File currentFile = null;
+    private OurFile _currentOurFile = null;
     public async Task StartAsync()
     {
         server.OnMessageReceived += AnalyseMessageAsync;
@@ -20,9 +19,11 @@ public class Presenter(IMainView view, TcpServer server, ClientMessageAnalyser a
         //Chiffrement des données du fichier UPLOAD si le cas à été détecté à la dernière analyse
         if (fileUploadRequest)
         {
-            fileEncryptor.Encrypte(currentFile);
+            _currentOurFile.Content = message;
+            fileManager.Encrypte(_currentOurFile);
+            //TODO Envoyer le fichier une fois chiffrer grace au fileManager
             fileUploadRequest = false;
-            currentFile = null;
+            _currentOurFile = null;
         }
         //Détection du cas particulier UPLOAD
         if (response.Equals("UPLOAD"))
@@ -33,11 +34,11 @@ public class Presenter(IMainView view, TcpServer server, ClientMessageAnalyser a
             {
                 (string fileName, int size) = parsedResult.Value;
                 
-                currentFile = new File
+                _currentOurFile = new OurFile
                 {
                     FileName = fileName,
                     FileSize = size,
-                    //TODO utiliser fileManager pour transmettre le user?
+                    //TODO récupérer l'utilisateur qui upload le fichier pour avoir sa clé AES
                 };
             }
 

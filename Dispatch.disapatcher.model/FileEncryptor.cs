@@ -5,14 +5,14 @@ namespace Dispatch.disapatcher.model;
 
 public class FileEncryptor
 {
-    public string Encrypte(File file)
+    public string Encrypte(OurFile ourFile/*, User user*/)    //Besoin du User pour sa clé AES
     {
-        //(byte[] ciphertext, byte[] tag) = EncryptAESGCM(fileContent, aesKey, iv, aad);
+        //TODO Vérifier si cette méthode n'a pas des failles de sécurité
+        //TODO Récupérer l'aes key de l'utilisateur 
+        var aes = Convert.FromBase64String(AesKeyGenerator.GenerateAesKey());
         
-        //Console.WriteLine("Texte chiffré: " + Convert.ToBase64String(ciphertext));
-        //Console.WriteLine("Tag d'authentification: " + Convert.ToBase64String(tag));
+        (ourFile.EncryptedContent, ourFile.Tag) = EncryptAESGCM(ourFile.Content, aes, ourFile.Iv, ourFile.Aad);
         
-        Console.WriteLine("UPLOADING TEST :\n" + file.Content);
         return String.Empty;
     }
     
