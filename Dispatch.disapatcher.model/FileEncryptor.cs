@@ -5,7 +5,8 @@ namespace Dispatch.disapatcher.model;
 
 public class FileEncryptor
 {
-    public string Encrypte(OurFile ourFile/*, User user*/)    //Besoin du User pour sa clé AES
+    public string Encrypte(OurFile ourFile/*, User user, string content*/)    //Besoin du User pour sa clé AES
+                                                                              //Besoin du contenu pour évité une faille
     {
         //TODO Vérifier si cette méthode n'a pas des failles de sécurité
         //TODO Récupérer l'aes key de l'utilisateur 

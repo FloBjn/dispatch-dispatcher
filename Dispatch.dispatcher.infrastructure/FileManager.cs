@@ -5,7 +5,7 @@ namespace Dispatch.dispatcher.infrastructure;
 
 public class FileManager : IFileManager
 {
-    private const string FilePath = "ressources/link.json";
+    private const string FilePath = "ressources/files.json";
     
     private FileEncryptor encryptor;
 
