@@ -5,7 +5,7 @@ namespace Dispatch.dispatcher.infrastructure;
 
 public class FileManager : IFileManager
 {
-    private const string FilePath = "ressources/files.json";
+    private const string FilePath = "ressources/file.json";
     
     private FileEncryptor encryptor;
 
@@ -21,7 +21,19 @@ public class FileManager : IFileManager
     /// <param name="ourFile"></param>
     public void SaveFile(OurFile ourFile)
     {
-        File.WriteAllText(FilePath, ToJson(ourFile));
+        string temp;
+        
+        try
+        {
+            //Copie des fichiers déja existants 
+            temp = File.ReadAllText(FilePath) + "\n" + ToJson(ourFile);
+        }
+        catch (Exception ex)
+        {
+            temp = ToJson(ourFile);
+        }
+        //Écriture du fichier 
+        File.WriteAllText(FilePath, temp);
     }
 
     public void Encrypte(OurFile ourFile, string content)
