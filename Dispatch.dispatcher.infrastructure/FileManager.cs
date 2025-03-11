@@ -34,6 +34,8 @@ public class FileManager : IFileManager
         }
         //Écriture du fichier 
         File.WriteAllText(FilePath, temp);
+        
+        Console.WriteLine("Fichier " + ourFile.FileName + " uploadé!");
     }
 
     public void Encrypte(OurFile ourFile, string content)
