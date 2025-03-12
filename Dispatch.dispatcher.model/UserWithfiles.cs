@@ -1,4 +1,4 @@
-﻿namespace Dispatch.disapatcher.model;
+﻿namespace Dispatch.dispatcher.model;
 
 public class UserWithFiles
 {
