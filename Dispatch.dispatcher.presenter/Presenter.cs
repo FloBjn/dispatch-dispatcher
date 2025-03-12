@@ -1,4 +1,4 @@
-﻿using Dispatch.disapatcher.model;
+﻿using Dispatch.dispatcher.model;
 
 namespace Dispatch.dispatcher.presenter;
 

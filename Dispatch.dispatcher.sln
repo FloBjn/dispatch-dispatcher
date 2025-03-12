@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dispatch.disapatcher.model", "Dispatch.disapatcher.model\Dispatch.disapatcher.model.csproj", "{224BAC27-A6DD-48A1-99E6-3781566F8BC9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dispatch.dispatcher.model", "Dispatch.dispatcher.model\Dispatch.dispatcher.model.csproj", "{224BAC27-A6DD-48A1-99E6-3781566F8BC9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dispatch.dispatcher.presenter", "Dispatch.dispatcher.presenter\Dispatch.dispatcher.presenter.csproj", "{9FCF2AB3-A03B-4AFD-9889-37B250870A98}"
 EndProject

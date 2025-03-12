@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace Dispatch.disapatcher.model
+namespace Dispatch.dispatcher.model
 {
     /// <summary>
     /// Classe permettant de générer une clé secrète AES de 256 bits.
