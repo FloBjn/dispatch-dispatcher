@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Dispatch.disapatcher.model;
+using Dispatch.dispatcher.model;
 
 namespace Dispatch.dispatcher.network;
 

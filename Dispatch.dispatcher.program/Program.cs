@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Dispatch.disapatcher.model;
+using Dispatch.dispatcher.model;
 using Dispatch.dispatcher.infrastructure;
 using Dispatch.dispatcher.presenter;
 using Dispatch.dispatcher.view;
