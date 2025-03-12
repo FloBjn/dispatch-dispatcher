@@ -36,7 +36,7 @@
             // 🔍 Vérification d'une tentative de connexion
             if (DispatcherProtocol.ParseLogin(message) is (string username, string password))
             {
-                Console.WriteLine($"🔑 Tentative de connexion : {username}");
+                Console.WriteLine($"Tentative de connexion : {username}");
                 if (_userManager.VerifyUser(username, password) != null)
                 {
                     _connectedUser = _userManager.VerifyUser(username, password);
@@ -51,7 +51,7 @@
             // 🔍 Vérification d'une tentative d'inscription
             if (DispatcherProtocol.ParseRegister(message) is (string newUser, string newPassword))
             {
-                Console.WriteLine($"🆕 Tentative d'enregistrement : {newUser}, Password : {newPassword}");
+                Console.WriteLine($"Tentative d'enregistrement : {newUser}, Password : {newPassword}");
 
                 // Création d'un nouvel utilisateur
                 _connectedUser = new User
