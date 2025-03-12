@@ -1,7 +1,7 @@
 ﻿{
   "multicastAddress": "224.123.123.123",
-  "multicastPort": 50000,
-  "unicastPort": 32000,
+  "multicastPort": 50204,
+  "unicastPort": 1234,
   "networkInterface": "ethernet_32769",
   "tls": true,
   "workingFolderPath": "C:\\TEMP\\DISPATCHER",
