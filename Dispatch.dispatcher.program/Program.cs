@@ -12,9 +12,14 @@ public class Program
 {
     public static void Main()
     {
+        // Gestion des Containers
+        ContainerManager containerManager = new ContainerManager();
+        
+        //TCP pour communiquer avec le container
+        var tcpContainer = new TcpContainer(containerManager, new UnicastConnection());
         
         // Gestion des fichiers 
-        IFileManager fileManager = new FileManager(new FileEncryptor());
+        IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer);
         
         // Gestion des utilisateurs
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(), fileManager);
@@ -27,7 +32,7 @@ public class Program
         var presenter = new Presenter(view, server, analyser, fileManager);
 
         // Démarrer l'écoute multicast 
-        MulticastListener multicastListener = new MulticastListener();
+        MulticastListener multicastListener = new MulticastListener(containerManager);
         multicastListener.StartListening();
         
         // Démarrer le serveur TCP en mode bloquant (reste dans la boucle d'écoute)

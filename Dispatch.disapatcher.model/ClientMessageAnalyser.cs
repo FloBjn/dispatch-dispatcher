@@ -87,6 +87,7 @@
                 _fileManager.SaveFile(_currentOurFile);
                 
                 //TODO Envoyer le fichier aux container
+                _fileManager.SendFile();
                 
                 _fileUploadRequest = false;
                 _currentOurFile = null;

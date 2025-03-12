@@ -7,11 +7,13 @@ public class FileManager : IFileManager
 {
     private const string FilePath = "ressources/file.json";
     
-    private FileEncryptor encryptor;
+    private FileEncryptor _encryptor;
+    private TcpContainer _tcpContainer;
 
-    public FileManager(FileEncryptor encryptor)
+    public FileManager(FileEncryptor encryptor, TcpContainer tcpContainer)
     {
-        this.encryptor = encryptor;
+        _encryptor = encryptor;
+        _tcpContainer = tcpContainer;
     }
     
     /// <summary>
@@ -41,7 +43,12 @@ public class FileManager : IFileManager
     public void Encrypte(OurFile ourFile, string content)
     {
         //Cohérent avec SOLID?
-        encryptor.Encrypte(ourFile, content);
+        _encryptor.Encrypte(ourFile, content);
+    }
+
+    public void SendFile()
+    {
+        _tcpContainer.SendMessageToFirst("Message test Unicast TCP vers container");
     }
 
     /// <summary>

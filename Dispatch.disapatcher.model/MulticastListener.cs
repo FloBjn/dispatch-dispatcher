@@ -11,7 +11,14 @@ namespace Dispatch.dispatcher.network;
 public class MulticastListener
 {
     private const string MULTICAST_ADDR = "224.123.123.123";
-    private const int MULTICAST_PORT = 1234;
+    private const int MULTICAST_PORT = 50204;
+    
+    public ContainerManager ContainerManager { get; set; }
+
+    public MulticastListener(ContainerManager containerManager)
+    {
+        ContainerManager = containerManager;
+    }
 
     /// <summary>
     /// Démarre l'écoute des messages multicast envoyés par les Containers.
