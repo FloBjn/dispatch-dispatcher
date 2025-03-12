@@ -4,22 +4,28 @@ using System.Text;
 
 namespace Dispatch.disapatcher.model;
 
-public class TcpServer(int port)
+public class TcpServer
 {
     private TcpListener? _listener;
     private bool _isRunning;
+    private Config _config;
 
     public event Func<string, Task<string>>? OnMessageReceived; // Événement pour transmettre le message au Presenter
+
+    public TcpServer(Config config)
+    {
+        _config = config;
+    }
 
     /// <summary>
     /// Démarre le serveur TCP et écoute les connexions entrantes.
     /// </summary>
     public async Task StartAsync()
     {
-        _listener = new TcpListener(IPAddress.Any, port);
+        _listener = new TcpListener(IPAddress.Any, _config.UnicastPort);
         _listener.Start();
         _isRunning = true;
-        Console.WriteLine($"Serveur démarré et écoute sur le port {port}...");
+        Console.WriteLine($"Serveur démarré et écoute sur le port {_config.UnicastPort}...");
 
         while (_isRunning)
         {

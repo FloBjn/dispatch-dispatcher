@@ -2,7 +2,11 @@
 
 namespace Dispatch.dispatcher.presenter;
 
-public class Presenter(IMainView view, TcpServer server, ClientMessageAnalyser analyser, IFileManager fileManager)
+public class Presenter(
+    IMainView view,
+    TcpServer server,
+    ClientMessageAnalyser analyser,
+    IFileManager fileManager)
 {
     private bool fileUploadRequest = false;
     private OurFile _currentOurFile = null;

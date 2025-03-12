@@ -10,8 +10,14 @@ namespace Dispatch.dispatcher.network;
 /// </summary>
 public class MulticastListener
 {
-    private const string MULTICAST_ADDR = "224.123.123.123";
-    private const int MULTICAST_PORT = 1234;
+    private string _multicastAdr;
+    private int _multicastPort;
+
+    public MulticastListener(Config config)
+    {
+        _multicastAdr = config.MulticastAddress;
+        _multicastPort = config.MulticastPort;
+    }
 
     /// <summary>
     /// Démarre l'écoute des messages multicast envoyés par les Containers.
@@ -25,14 +31,14 @@ public class MulticastListener
             udpClient.ExclusiveAddressUse = false;
 
             // Lier le socket au port multicast, en acceptant les messages réseau envoyé sur n'importe quelle interface réseau.
-            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, MULTICAST_PORT);
+            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, _multicastPort);
             udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             udpClient.Client.Bind(localEndPoint);
 
             // Rejoindre le groupe multicast, ce qui permet au socket de recevoir les messages envoyé sur l'adresse IP 224.123.123.123
-            udpClient.JoinMulticastGroup(IPAddress.Parse(MULTICAST_ADDR));
+            udpClient.JoinMulticastGroup(IPAddress.Parse(_multicastAdr));
 
-            Console.WriteLine($"écoute des Containers sur {MULTICAST_ADDR}:{MULTICAST_PORT}...");
+            Console.WriteLine($"écoute des Containers sur {_multicastAdr}:{_multicastPort}...");
 
             while (true)
             {
