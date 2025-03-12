@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Dispatch.disapatcher.model;
+using Dispatch.dispatcher.model;
 
 public class Config
 {
