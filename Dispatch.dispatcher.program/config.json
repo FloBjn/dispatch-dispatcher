@@ -1,0 +1,18 @@
+﻿{
+  "multicastAddress": "224.123.123.123",
+  "multicastPort": 50000,
+  "unicastPort": 32000,
+  "networkInterface": "ethernet_32769",
+  "tls": true,
+  "workingFolderPath": "C:\\TEMP\\DISPATCHER",
+  "users": [
+    {
+      "user": {
+        "username": "louis",
+        "hashpass": "755e3d3e6750d92efca34a94cdbd4f27f28a9dffe326cc669c9ae9b52694f20485075636655a1e4a41462f4867769d32",
+        "aesKey": "lt+7ZZGToz7kTnQgYqSe1bDQaO21QHdMuztPxDiAZtY="
+      },
+      "files": []
+    }
+  ]
+}
