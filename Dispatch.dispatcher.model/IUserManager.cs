@@ -1,4 +1,4 @@
-﻿namespace Dispatch.disapatcher.model
+﻿namespace Dispatch.dispatcher.model
 {
     /// <summary>
     /// Interface définissant les opérations de gestion des utilisateurs.

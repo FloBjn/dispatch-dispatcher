@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Dispatch.disapatcher.model
+namespace Dispatch.dispatcher.model
 {
     
     public static class DispatcherProtocol
