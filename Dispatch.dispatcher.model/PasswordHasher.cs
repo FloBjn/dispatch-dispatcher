@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Dispatch.disapatcher.model
+namespace Dispatch.dispatcher.model
 {
     /// <summary>
     /// Classe utilitaire pour le hachage des mots de passe avec SHA3-384.
