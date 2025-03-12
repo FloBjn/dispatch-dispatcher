@@ -1,4 +1,4 @@
-﻿namespace Dispatch.disapatcher.model
+﻿namespace Dispatch.dispatcher.model
 {
     /// <summary>
     /// Analyseur de messages clients reçus par le Dispatcher.

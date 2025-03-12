@@ -1,4 +1,4 @@
-﻿using Dispatch.dispatcher.model;
+using Dispatch.dispatcher.model;
 using Dispatch.dispatcher.infrastructure;
 using Dispatch.dispatcher.presenter;
 using Dispatch.dispatcher.view;
@@ -23,13 +23,12 @@ public class Program
         var tcpContainer = new TcpContainer(containerManager, new UnicastConnection());
         
         // Gestion des fichiers 
-        IFileManager fileManager = new FileManager(new FileEncryptor());
-
         IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer, new FileHasher());
         
         // Gestion des utilisateurs
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
 
+        
         // Serveur TCP qui écoute les clients
         var server = new TcpServer(config);
 

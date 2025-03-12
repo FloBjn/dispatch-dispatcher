@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Dispatch.disapatcher.model\Dispatch.disapatcher.model.csproj" />
+      <ProjectReference Include="..\Dispatch.dispatcher.model\Dispatch.dispatcher.model.csproj" />
     </ItemGroup>
 
 </Project>
