@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Dispatch.disapatcher.model;
+namespace Dispatch.dispatcher.model;
 
 public class FileEncryptor
 {
