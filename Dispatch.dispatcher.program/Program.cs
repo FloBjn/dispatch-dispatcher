@@ -18,30 +18,15 @@ public class Program
         config.Save(configPath);
         // Gestion des fichiers 
         IFileManager fileManager = new FileManager(new FileEncryptor());
-
-        // Gestion du fichier de config
-        const string configPath = "config.json";
-
-        Config config = Config.Load(configPath);
-
-        config.Save(configPath);
-        // Gestion des fichiers 
-        IFileManager fileManager = new FileManager(new FileEncryptor());
-
+        
         // Gestion des utilisateurs
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
 
         
-        // Serveur TCP qui écoute les clients
-        var server = new TcpServer(config);
-
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server, analyser, fileManager);
 
         // Démarrer l'écoute multicast 
-        MulticastListener multicastListener = new MulticastListener(config);
-        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
         
         var server = new TcpServer(config);
         var presenter = new Presenter(view, server, analyser, fileManager);
