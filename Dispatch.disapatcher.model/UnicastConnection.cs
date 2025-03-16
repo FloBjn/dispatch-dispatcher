@@ -29,7 +29,7 @@ public class UnicastConnection
         _stream = _client.GetStream();
         _isConnected = true;
         
-        Console.WriteLine($"Connexion TCP vers {ip}:{port}");
+        Console.WriteLine($"Connexion TCP réussie");
     }
     
     public string ReadLine()
@@ -44,7 +44,7 @@ public class UnicastConnection
 
     public void SendMessage(string message)
     {
-        Console.WriteLine($"Envoie du message {message} vers {_ip}:{_port}");
+        Console.WriteLine($"Envoie du message [{message}] vers l'IP {_ip}:{_port}");
         byte[] data = Encoding.UTF8.GetBytes(message);
         _stream.Write(data, 0, data.Length);
         _stream.Flush();
@@ -56,6 +56,6 @@ public class UnicastConnection
         _client.Close();
         _client = new TcpClient();
         _isConnected = false;
-        Console.WriteLine("Déconnexion terminé");
+        Console.WriteLine("Déconnexion TCP");
     }
 }

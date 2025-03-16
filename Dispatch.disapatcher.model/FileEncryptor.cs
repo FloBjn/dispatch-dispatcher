@@ -9,12 +9,12 @@ public class FileEncryptor
     {
         var aes = Convert.FromBase64String(ourFile.User.AesKey);
         
-        (ourFile.EncryptedContent, ourFile.Tag) = EncryptAESGCM(content, aes, ourFile.Iv, ourFile.Aad);
+        (ourFile.Content, ourFile.Tag) = EncryptAesgcm(content, aes, ourFile.Iv, ourFile.Aad);
     }
     
-    private (byte[] encryptedText, byte[] tag) EncryptAESGCM(string text, byte[] aesKey, byte[] iv, byte[] aad)
+    private (byte[] encryptedText, byte[] tag) EncryptAesgcm(string text, byte[] aesKey, byte[] iv, byte[] aad)
     {
-        using (AesGcm aesGcm = new AesGcm(aesKey))
+        using (AesGcm aesGcm = new AesGcm(aesKey, 16))
         {
             byte[] textBytes = Encoding.UTF8.GetBytes(text);
             byte[] encryptedText = new byte[textBytes.Length];
@@ -25,7 +25,7 @@ public class FileEncryptor
         }
     }
     
-    private string DecryptAESGCM(byte[] encryptedText, byte[] tag, byte[] aesKey, byte[] iv, byte[] aad)
+    private string DecryptAesgcm(byte[] encryptedText, byte[] tag, byte[] aesKey, byte[] iv, byte[] aad)
     {
         using (AesGcm aesGcm = new AesGcm(aesKey))
         {

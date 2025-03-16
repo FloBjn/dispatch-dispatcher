@@ -19,7 +19,7 @@ public class Program
         var tcpContainer = new TcpContainer(containerManager, new UnicastConnection());
         
         // Gestion des fichiers 
-        IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer);
+        IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer, new FileHasher());
         
         // Gestion des utilisateurs
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(), fileManager);

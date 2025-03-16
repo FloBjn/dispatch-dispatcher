@@ -30,12 +30,11 @@ public class OurFile
         set
         {
             _fileSize = value;
-            EncryptedContent = new byte[_fileSize];
+            Content = new byte[_fileSize];
         }
     }
     public User User { get; set; }
-    public string Content { get; set; }
-    public byte[] EncryptedContent { get; set; }
+    public byte[] Content { get; set; }
     public byte[] Iv { get; set; } // Signifie Initialisation Vector --> sers au chiffrement AESGCM
     public byte[] Aad { get; set; } // Signifie Additional Authenticated Data --> sers également au chiffrement AESGCM
     public byte[] Tag { get; set; }

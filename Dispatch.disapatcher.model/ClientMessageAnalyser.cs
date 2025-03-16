@@ -83,14 +83,22 @@
             //Chiffrement des données du fichier UPLOAD si le cas à été détecté à la dernière analyse
             if (_fileUploadRequest)
             {
-                _fileManager.Encrypte(_currentOurFile, message);
-                _fileManager.SaveFile(_currentOurFile);
-                
-                //TODO Envoyer le fichier aux container
-                _fileManager.SendFile();
-                
-                _fileUploadRequest = false;
-                _currentOurFile = null;
+                try
+                {
+                    Console.WriteLine("Début de l'upload ...");
+                    _fileManager.Encrypte(_currentOurFile, message);
+                    _fileManager.SaveFile(_currentOurFile);
+
+                    //TODO Envoyer le fichier aux container
+                    _fileManager.SendFile(_currentOurFile);
+
+                    _fileUploadRequest = false;
+                    _currentOurFile = null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erreur dans l'enregistrement du fichier sur le container:\n{ex.Message}");
+                }
             }
 
             if (String.IsNullOrEmpty(DispatcherProtocol.ParseCatalogue(message)))
