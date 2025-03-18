@@ -9,7 +9,9 @@ public class Config
     public string NetworkInterface { get; set; }
     public bool Tls { get; set; }
     public string WorkingFolderPath { get; set; }
-    
+    public string CertificatePath { get; set; }
+    public string CertificatePassword { get; set; }
+
     public List<UserWithFiles> Users { get; set; } = new List<UserWithFiles>();
 
     public static Config Load(string filePath)

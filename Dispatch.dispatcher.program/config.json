@@ -1,10 +1,12 @@
 ﻿{
   "multicastAddress": "224.123.123.123",
   "multicastPort": 50204,
-  "unicastPort": 1234,
-  "networkInterface": "ethernet_32769",
+  "unicastPort": 12345,
+  "networkInterface": "ethernet_32769",   
   "tls": true,
   "workingFolderPath": "C:\\TEMP\\DISPATCHER",
+  "CertificatePath": "certificat/labs25.swi.ovh.p12",
+  "CertificatePassword": "labo2025",
   "users": [
     {
       "user": {

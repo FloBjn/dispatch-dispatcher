@@ -21,7 +21,6 @@ public class Program
         
         // Gestion des utilisateurs
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
-
         
         // Interface utilisateur
         IMainView view = new View();
