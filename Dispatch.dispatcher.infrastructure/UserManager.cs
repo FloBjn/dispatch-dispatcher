@@ -26,6 +26,7 @@ namespace Dispatch.dispatcher.infrastructure
         {
             var userWithFiles = _config.Users.Find(u => u.User.Username == username);
             if (userWithFiles == null) return null;
+            //bzez
 
             string hashedPassword = PasswordHasher.HashPassword(password);
             return userWithFiles.User.PasswordHash == hashedPassword ? userWithFiles.User : null;
