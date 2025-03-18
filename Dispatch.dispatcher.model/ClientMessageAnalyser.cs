@@ -71,10 +71,10 @@ public class ClientMessageAnalyser
                     if (_userManager.VerifyUser(username, password) != null)
                     {
                         _connectedUser = _userManager.VerifyUser(username, password);
-                        return "Login ok";
+                        return "LOGIN_OK";
                     }
 
-                    return "Login error";
+                    return "LOGIN_ERROR";
                 }
                 catch (Exception ex)
                 {
