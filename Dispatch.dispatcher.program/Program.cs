@@ -1,3 +1,4 @@
+using Dispatch.disapatcher.model;
 using Dispatch.dispatcher.model;
 using Dispatch.dispatcher.infrastructure;
 using Dispatch.dispatcher.presenter;
