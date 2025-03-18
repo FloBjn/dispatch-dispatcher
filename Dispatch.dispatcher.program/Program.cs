@@ -27,7 +27,6 @@ public class Program
         
         // Gestion des utilisateurs
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
-
         
         // Serveur TCP qui écoute les clients
         var server = new TcpServer(config);
