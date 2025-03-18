@@ -63,6 +63,30 @@
 
                 // Ajout de l'utilisateur au fichier JSON
                 _userManager.AddUser(_connectedUser);
+
+                return "Inscription utilisateur réussie";
+            }
+            
+            //Chiffrement des données du fichier UPLOAD si le cas à été détecté à la dernière analyse
+            if (_fileUploadRequest)
+            {
+                try
+                {
+                    Console.WriteLine("Début de l'upload ...");
+                    _fileManager.Encrypte(_currentOurFile, message);
+                    _fileManager.SaveFile(_currentOurFile);
+                    _fileManager.SendFile(_currentOurFile);
+
+                    _currentOurFile = null;
+                    _fileUploadRequest = false;
+                }
+                catch (Exception ex)
+                {
+                    _fileUploadRequest = false;
+                    Console.WriteLine($"Erreur dans l'enregistrement du fichier sur le container:\n{ex.Message}::{ex.StackTrace}");
+                }
+
+                return "Upload du fichier sur le container réussi";
             }
             
             // 🔍 Vérification d'une tentative d'upload
@@ -78,18 +102,8 @@
                 };
 
                 _fileUploadRequest = true;
-            }
-        
-            //Chiffrement des données du fichier UPLOAD si le cas à été détecté à la dernière analyse
-            if (_fileUploadRequest)
-            {
-                _fileManager.Encrypte(_currentOurFile, message);
-                _fileManager.SaveFile(_currentOurFile);
-                
-                //TODO Envoyer le fichier aux container
-                
-                _fileUploadRequest = false;
-                _currentOurFile = null;
+
+                return $"Upload du fichier {fileName}";
             }
 
             if (String.IsNullOrEmpty(DispatcherProtocol.ParseCatalogue(message)))

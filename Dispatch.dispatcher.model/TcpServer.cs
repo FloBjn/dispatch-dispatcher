@@ -45,6 +45,7 @@ public class TcpServer
     /// <summary>
     /// Gère une connexion client via TLS.
     /// </summary>
+    /// <param name="client"></param>
     private async Task HandleClientAsync(TcpClient client)
     {
         Console.WriteLine($"Client connecté : {client.Client.RemoteEndPoint}");

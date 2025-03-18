@@ -12,11 +12,13 @@ public class MulticastListener
 {
     private string _multicastAdr;
     private int _multicastPort;
+    private ContainerManager _containerManager;
 
-    public MulticastListener(Config config)
+    public MulticastListener(Config config, ContainerManager containerManager)
     {
         _multicastAdr = config.MulticastAddress;
         _multicastPort = config.MulticastPort;
+        _containerManager = containerManager;
     }
 
     /// <summary>
@@ -57,7 +59,7 @@ public class MulticastListener
                         Console.WriteLine($"Nouveau Container détecté : {containerName} ({containerIp}:{tcpPort})");
 
                         // Ajouter le Container détecté dans la liste
-                        ContainerManager.AddContainer(containerName, containerIp, tcpPort);
+                        _containerManager.AddContainer(containerName, containerIp, tcpPort);
                     }
                     else
                     {

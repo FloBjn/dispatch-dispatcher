@@ -20,6 +20,6 @@ public class Presenter(
         
        
         
-        return Task.FromResult(string.IsNullOrEmpty(response) ? "Erreur lors de l'inscription" : response);
+        return Task.FromResult(string.IsNullOrEmpty(response) ? "Le message du client n'est pas reconnu." : response);
     }
 }
