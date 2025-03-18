@@ -25,7 +25,7 @@ public class Program
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(), fileManager);
 
         // Serveur TCP qui écoute les clients
-        var server = new TcpServer(1234);
+        var server = new TcpServer(12345);
 
         // Interface utilisateur
         IMainView view = new View();

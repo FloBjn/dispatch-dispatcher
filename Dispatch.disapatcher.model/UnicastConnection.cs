@@ -25,7 +25,7 @@ public class UnicastConnection
         _ip = ip;
         _port = port;
         
-        _client.Connect(ip, port);
+        _client.Connect(ip, port); //TODO ICI
         _stream = _client.GetStream();
         _isConnected = true;
         

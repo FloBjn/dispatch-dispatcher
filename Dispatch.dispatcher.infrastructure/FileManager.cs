@@ -26,7 +26,7 @@ public class FileManager : IFileManager
     /// <param name="ourFile"></param>
     public void SaveFile(OurFile ourFile)
     {
-        Console.WriteLine("Sauvegarde du fichier sur le dispatcher");
+        Console.WriteLine("Sauvegarde du fichier sur le dispatcher ...");
         string temp;
         
         try
