@@ -177,15 +177,5 @@ namespace Dispatch.dispatcher.model
         }
 
         private static bool IsValid(string value, string pattern) => Regex.IsMatch(value, $"^{pattern}$");
-
-        public static string BuildLoginOk()
-        {
-            return "LOGIN_OK\r\n";
-        }
-
-        public static string BuildLoginEr()
-        {
-            return "LOGIN_ERROR\r\n";
-        }
     }
 }
