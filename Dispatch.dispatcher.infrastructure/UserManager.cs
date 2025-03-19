@@ -43,7 +43,7 @@ namespace Dispatch.dispatcher.infrastructure
             }
 
             newUser.PasswordHash = PasswordHasher.HashPassword(newUser.PasswordHash);
-            _config.Users.Add(new UserWithFiles { User = newUser, Files = new List<string>() });
+            _config.Users.Add(new UserWithFiles { User = newUser, Files = new List<StoredFile>() });
 
             _config.Save("config.json"); // Sauvegarde la config mise à jour
             Console.WriteLine($"Utilisateur {newUser.Username} ajouté avec succès !");

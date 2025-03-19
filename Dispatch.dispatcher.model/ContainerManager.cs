@@ -1,39 +1,75 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace Dispatch.dispatcher.model;
 
-namespace Dispatch.dispatcher.network
+public class ContainerManager
 {
-    public static class ContainerManager
-    {
-        private static readonly Dictionary<string, (string IP, int Port)> Containers = new();
+    private readonly Dictionary<string, ContainerInfo> _containers = new();
+    private readonly object _lock = new();
 
-        /// <summary>
-        /// Ajoute un Container à la liste des Containers actifs.
-        /// </summary>
-        public static void AddContainer(string name, string ip, int port)
+    /// <summary>
+    /// Ajoute ou met à jour un Container actif.
+    /// </summary>
+    public void AddOrUpdateContainer(string name, string ip, int port)
+    {
+        lock (_lock)
         {
-            if (!Containers.ContainsKey(name))
+            if (!_containers.ContainsKey(name))
             {
-                Containers[name] = (ip, port);
-                Console.WriteLine($"🟢 Container ajouté : {name} ({ip}:{port})");
+                _containers[name] = new ContainerInfo { IP = ip, Port = port, LastSeen = DateTime.UtcNow };
+                Console.WriteLine($"Container ajouté : {name} ({ip}:{port})");
             }
             else
             {
-                Console.WriteLine($"🟡 Mise à jour du Container : {name} ({ip}:{port})");
-                Containers[name] = (ip, port);
+                _containers[name].IP = ip;
+                _containers[name].Port = port;
+                _containers[name].LastSeen = DateTime.UtcNow;
+                Console.WriteLine($"Mise à jour du Container : {name} ({ip}:{port})");
             }
         }
+    }
 
-        /// <summary>
-        /// Liste les Containers actifs.
-        /// </summary>
-        public static void ListContainers()
+    /// <summary>
+    /// Nettoie les Containers inactifs.
+    /// </summary>
+    public void CleanupInactiveContainers()
+    {
+        lock (_lock)
         {
-            Console.WriteLine("📋 Liste des Containers actifs :");
-            foreach (var (name, (ip, port)) in Containers)
+            var now = DateTime.UtcNow;
+            var inactiveContainers = _containers
+                .Where(c => (now - c.Value.LastSeen).TotalSeconds > 90)
+                .Select(c => c.Key)
+                .ToList();
+
+            foreach (var name in inactiveContainers)
             {
-                Console.WriteLine($"🔹 {name} - {ip}:{port}");
+                _containers.Remove(name);
+                Console.WriteLine($"Container supprimé : {name} (inactif)");
             }
         }
+    }
+
+    /// <summary>
+    /// Liste les Containers actifs.
+    /// </summary>
+    public void ListContainers()
+    {
+        Console.WriteLine("Liste des Containers actifs :");
+        foreach (var (name, container) in _containers)
+        {
+            Console.WriteLine($"{name} - {container.IP}:{container.Port}");
+        }
+    }
+
+    public List<(string, int)> GetActiveContainers()
+    {
+        lock (_lock)
+        {
+            return _containers.Values.Select(c => (c.IP, c.Port)).ToList();
+        }
+    }
+
+    public object GetFirstContainerIp()
+    {
+        throw new NotImplementedException();
     }
 }
