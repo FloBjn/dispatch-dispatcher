@@ -1,5 +1,3 @@
-﻿using System;
-using System.Threading;
 using Dispatch.dispatcher.model;
 using Dispatch.dispatcher.infrastructure;
 using Dispatch.dispatcher.presenter;
@@ -12,18 +10,26 @@ public class Program
 {
     public static void Main()
     {
+        // Gestion du fichier de config
+        const string configPath = "config.json";
+
+        Config config = Config.Load(configPath);
+
+        config.Save(configPath);
+        // Gestion des fichiers 
+        IFileManager fileManager = new FileManager(new FileEncryptor());
+        
         // Gestion des utilisateurs
-        UserManager userManager = new UserManager();
-
-        // Serveur TCP qui écoute les clients
-        var server = new TcpServer(1234, userManager);
-
+        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
+        
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server);
 
         // Démarrer l'écoute multicast 
-        MulticastListener multicastListener = new MulticastListener();
+        
+        var server = new TcpServer(config);
+        var presenter = new Presenter(view, server, analyser, fileManager);
+        MulticastListener multicastListener = new MulticastListener(config);
         multicastListener.StartListening();
         
         // Démarrer le serveur TCP en mode bloquant (reste dans la boucle d'écoute)
