@@ -45,8 +45,7 @@ public class ClientMessageAnalyser
                     //Chiffre le contenu du fichier avec AESGCM
                     _fileManager.Encrypte(_currentOurFile, message);
                     //Sauvegarde le fichier sur la config (et est lié a son user) 
-                    //TODO Config
-                    _fileManager.SaveFile(_currentOurFile);
+                    _fileManager.SaveFile(_currentOurFile, _connectedUser.Username);
                     //Envoie le fichier au container en TCP au bon format
                     _fileManager.SendFile(_currentOurFile);
 

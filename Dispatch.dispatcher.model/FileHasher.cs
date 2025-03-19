@@ -1,8 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using Dispatch.dispatcher.model;
 
-namespace Dispatch.disapatcher.model;
+namespace Dispatch.dispatcher.model;
 
 public class FileHasher
 {

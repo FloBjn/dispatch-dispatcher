@@ -7,8 +7,6 @@ namespace Dispatch.dispatcher.infrastructure;
 
 public class FileManager : IFileManager
 {
-    private const string FilePath = "ressources/file.json";
-    
     private FileEncryptor _encryptor;
     private FileHasher _hasher;
     private TcpContainer _tcpContainer;
@@ -25,25 +23,46 @@ public class FileManager : IFileManager
     /// </summary>
     /// <param name="user"></param>
     /// <param name="ourFile"></param>
-    public void SaveFile(OurFile ourFile)
+    public void SaveFile(OurFile ourFile, string username)
     {
-        Console.WriteLine("Sauvegarde du fichier sur le dispatcher ...");
-        string temp;
-        
+        Console.WriteLine("Mise à jour du fichier de configuration avec le fichier uploadé...");
+
         try
         {
-            //Copie des fichiers déja existants 
-            temp = File.ReadAllText(FilePath) + "\n" + ToJson(ourFile);
+            // Charger la configuration actuelle
+            var config = Config.Load("config.json");
+
+            // Trouver l'utilisateur correspondant
+            var userWithFiles = config.Users.Find(u => u.User.Username == username);
+            if (userWithFiles == null)
+            {
+                throw new Exception($"Utilisateur {username} non trouvé dans la configuration !");
+            }
+            
+            // Générer le hash du nom du fichier (SHA3-384)
+            var (hashFileName, hashFileContent) = _hasher.HashFile(ourFile); 
+
+            // Déterminer le container de stockage 
+            string container = "container_1"; // À remplacer par la logique réelle
+
+            // Ajouter le fichier à la liste de l'utilisateur
+            userWithFiles.Files.Add(new StoredFile
+            {
+                HashFileName = hashFileName,
+                Containers = new List<string> { container }
+            });
+
+            // Sauvegarder la configuration mise à jour
+            config.Save("config.json");
+
+            Console.WriteLine($"Fichier {ourFile.FileName} ajouté pour l'utilisateur {username} !");
         }
         catch (Exception ex)
         {
-            temp = ToJson(ourFile);
+            throw new Exception($"Erreur lors de la mise à jour du fichier de configuration : {ex.Message}");
         }
-        //Écriture du fichier 
-        File.WriteAllText(FilePath, temp);
-        
-        Console.WriteLine("Fichier " + ourFile.FileName + " uploadé!");
     }
+
 
     public void Encrypte(OurFile ourFile, string content)
     {

@@ -1,4 +1,4 @@
-﻿using Dispatch.dispatcher.network;
+﻿using Dispatch.dispatcher.model;
 
 namespace Dispatch.disapatcher.model;
 
@@ -23,7 +23,7 @@ public class TcpContainer
     public void SendMessageToFirst(string message)
     {
         var containerIp = _containerManager.GetFirstContainerIp();
-        SendMessage(containerIp.Item1, containerIp.Item2, message);
+        //SendMessage(containerIp.Item1, containerIp.Item2, message);
     }
     /// <summary>
     /// Méthode envoyant un message à un container sur base de son ip et de son port
