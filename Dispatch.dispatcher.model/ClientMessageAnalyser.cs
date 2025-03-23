@@ -66,7 +66,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine($"Tentative de connexion : {username}");
                     if (_userManager.VerifyUser(username, password) != null)
                     {
                         _connectedUser = _userManager.VerifyUser(username, password);
@@ -86,8 +85,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine($"Tentative d'enregistrement : {newUser}, Password : {newPassword}");
-
                     // Création d'un nouvel utilisateur
                     _connectedUser = new User
                     {
@@ -112,8 +109,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine($"Tentative d'upload du fichier : {fileName}, taille : {size1}");
-
                     _currentOurFile = new OurFile
                     {
                         FileName = fileName,
@@ -136,7 +131,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine($"Tentative de download du fichier : {filename1}");
                     //TODO Analyse download
                     return $"Téléchargement du fichier {filename1}";
                 }
@@ -151,7 +145,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine($"Demande de purge du fichier : {filename2}");
                     //TODO Analyse purge
                     return $"Exécution de la purge sur {filename2}";
                 }
@@ -166,7 +159,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine("Demande d'un catalogue du client");
                     // TODO : récupéré les fichiers du client connecté avec _connectedUser
                     return "Envoie du catalogue";
                 }
@@ -181,7 +173,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine($"Demande de post du fichier : {filename3}, de taille : {size}, hashé");
                     //TODO Analyse post
                     return $"Post du fichier {filename3}";
                 }
@@ -196,7 +187,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine($"Demande de delete du fichier : {hashFileName1}");
                     //TODO Analyse delete
                     return $"Suppression du fichier : {hashFileName1}";
                 }
@@ -211,7 +201,6 @@ public class ClientMessageAnalyser
             {
                 try
                 {
-                    Console.WriteLine($"Demande de get du fichier : {hashFileName2}");
                     //TODO Analyse get
                     return $"Get du fichier {hashFileName2} en cours";
                 }

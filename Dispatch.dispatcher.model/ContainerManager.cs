@@ -15,14 +15,12 @@ public class ContainerManager
             if (!_containers.ContainsKey(name))
             {
                 _containers[name] = new ContainerInfo { IP = ip, Port = port, LastSeen = DateTime.UtcNow };
-                Console.WriteLine($"Container ajouté : {name} ({ip}:{port})");
             }
             else
             {
                 _containers[name].IP = ip;
                 _containers[name].Port = port;
                 _containers[name].LastSeen = DateTime.UtcNow;
-                Console.WriteLine($"Mise à jour du Container : {name} ({ip}:{port})");
             }
         }
     }

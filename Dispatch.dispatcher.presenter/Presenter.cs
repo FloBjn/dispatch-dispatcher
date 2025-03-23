@@ -2,24 +2,63 @@
 
 namespace Dispatch.dispatcher.presenter;
 
-public class Presenter(
-    IMainView view,
-    TcpServer server,
-    ClientMessageAnalyser analyser,
-    IFileManager fileManager)
+public class Presenter
 {
-    public async Task StartAsync()
+    private readonly IMainView _view;
+    private readonly TcpServer _unicastServer;
+    private readonly MulticastListener _multicastListener;
+    private readonly ClientMessageAnalyser _analyser;
+
+    public Presenter(IMainView view, TcpServer unicastServer,
+        MulticastListener multicastListener, ClientMessageAnalyser analyser)
     {
-        server.OnMessageReceived += AnalyseMessageAsync;
-        await server.StartAsync();
+        _view = view;
+        _unicastServer = unicastServer;
+        _multicastListener = multicastListener;
+        _analyser = analyser;
+        
+        _multicastListener.OnMessageReceived += ShowMessageContainer;
+        _unicastServer.OnMessageReceived += AnalyseMessageClient;
     }
     
-    private Task<string> AnalyseMessageAsync(string message)
+    /// <summary>
+    /// Démarre le serveur unicast
+    /// </summary>
+    public async Task StartAsync()
     {
-        string response = analyser.Analyse(message);
+        Thread multicastThread = new Thread(_multicastListener.StartListening);
         
-       
+        multicastThread.Start();
+        await _unicastServer.StartAsync();
+    }
+
+    /// <summary>
+    /// Analyse le message reçu du client
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    private Task<string> AnalyseMessageClient(string message)
+    {
+        // Affiche le message reçu du client
+        _view.DisplayMessageReceivedClient(message);
+        
+        // Analyse le message reçu
+        string response = _analyser.Analyse(message);
+        
+        // Affiche le message envoyé au client
+        _view.DisplayMessageSentClient(response);
         
         return Task.FromResult(string.IsNullOrEmpty(response) ? "Le message du client n'est pas reconnu." : response);
+    }
+    
+    /// <summary>
+    /// Montre le message reçu dans le container
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    private Task ShowMessageContainer(string message)
+    {
+        _view.DisplayMessageReceivedContainer(message);
+        return Task.FromResult("Message reçu");
     }
 }

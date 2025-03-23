@@ -30,16 +30,14 @@ public class Program
         
         // Serveur TCP qui écoute les clients
         var server = new TcpServer(config);
-
+        
+        MulticastListener multicastListener = new MulticastListener(config, containerManager);
+        
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server, analyser, fileManager);
-
-        // Démarrer l'écoute multicast 
-        MulticastListener multicastListener = new MulticastListener(config, containerManager);
-        multicastListener.StartListening();
+        var presenter = new Presenter(view, server, multicastListener, analyser);
         
-        // Démarrer le serveur TCP en mode bloquant (reste dans la boucle d'écoute)
+        // Démarrage du programme
         presenter.StartAsync().Wait();
     }
 }

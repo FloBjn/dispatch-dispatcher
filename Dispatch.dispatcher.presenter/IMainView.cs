@@ -1,5 +1,9 @@
 ﻿namespace Dispatch.dispatcher.presenter;
 
-public class IMainView
+public interface IMainView
 {
+    void DisplayMessageSentClient(string response);
+    
+    void DisplayMessageReceivedClient(string message);
+    void DisplayMessageReceivedContainer(string message);
 }
