@@ -10,12 +10,14 @@ public class FileManager : IFileManager
     private FileEncryptor _encryptor;
     private FileHasher _hasher;
     private TcpContainer _tcpContainer;
+    private ContainerManager _containerManager;
 
-    public FileManager(FileEncryptor encryptor, TcpContainer tcpContainer, FileHasher hasher)
+    public FileManager(FileEncryptor encryptor, TcpContainer tcpContainer, FileHasher hasher, ContainerManager containerManager)
     {
         _encryptor = encryptor;
         _hasher = hasher;
         _tcpContainer = tcpContainer;
+        _containerManager = containerManager;
     }
     
     /// <summary>
@@ -43,13 +45,17 @@ public class FileManager : IFileManager
             var (hashFileName, hashFileContent) = _hasher.HashFile(ourFile); 
 
             // Déterminer le container de stockage 
-            string container = "container_1"; // À remplacer par la logique réelle
-
+            var activeContainers = _containerManager.GetActiveContainers();
+            if (activeContainers.Count == 0)
+            {
+                throw new Exception("Aucun Container actif trouvé !");
+            }
+            
             // Ajouter le fichier à la liste de l'utilisateur
             userWithFiles.Files.Add(new StoredFile
             {
                 HashFileName = hashFileName,
-                Containers = new List<string> { container }
+                Containers = activeContainers.Select(c => c.Name).ToList() // Liste complète des Containers actifs
             });
 
             // Sauvegarder la configuration mise à jour
@@ -73,13 +79,24 @@ public class FileManager : IFileManager
 
     public void SendFile(OurFile ourFile)
     {
-        Console.WriteLine("Envoie du fichier sur le container ...");
+        Console.WriteLine("📡 Envoi du fichier à tous les Containers actifs...");
+
+        var activeContainers = _containerManager.GetActiveContainers();
+        if (activeContainers.Count == 0)
+        {
+            throw new Exception("🚨 Aucun Container actif trouvé !");
+        }
+
         var hashedFile = _hasher.HashFile(ourFile);
         var content = Encoding.UTF8.GetString(ourFile.Content);
-        
+
         string message = $"POST {hashedFile.name} {ourFile.FileSize} {hashedFile.content}\n{content}";
-        _tcpContainer.SendMessageToFirst(message);
+
+        _tcpContainer.SendMessageToAllAsync(message).Wait(); // Bloque jusqu'à la fin de l'exécution
+
+        Console.WriteLine("✅ Fichier envoyé à tous les Containers !");
     }
+
 
     /// <summary>
     /// Méthode permettant de formater un fichier en JSON
