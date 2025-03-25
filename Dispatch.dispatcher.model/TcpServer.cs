@@ -13,10 +13,9 @@ public class TcpServer
     private readonly X509Certificate2 _serverCertificate;
     private TcpListener _tcpListener;
     private bool _isRunning;
-
-    // 📡 Événement pour transmettre les messages au `Presenter`
-    public event Func<string, Task<string>>? OnMessageReceived;
+    public event Func<string, Task<string>>? OnMessageReceived; 
     
+
     public TcpServer(Config config)
     {
         _config = config;
@@ -75,7 +74,9 @@ public class TcpServer
                         Console.WriteLine("Le client a fermé la connexion.");
                         break;
                     }
-                    
+
+                    Console.WriteLine($"Message reçu : {message}");
+
                     if (OnMessageReceived != null)
                     {
                         string response = await OnMessageReceived.Invoke(message);

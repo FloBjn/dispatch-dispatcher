@@ -2,7 +2,7 @@
   "multicastAddress": "224.123.123.123",
   "multicastPort": 50204,
   "unicastPort": 12345,
-  "networkInterface": "ethernet_32769",
+  "networkInterface": "Wi-Fi",
   "tls": true,
   "workingFolderPath": "C:\\TEMP\\DISPATCHER",
   "CertificatePath": "certificat/labs25.swi.ovh.p12",
@@ -17,8 +17,6 @@
       "files": [
         {
           "hash_nomfichier": "9a1b3c5d... (SHA3-384 du nom du fichier)",
-          "taille": 123456,
-          "hash_contenufichier": "abcd1234... (SHA3-384 du contenu)",
           "containers": ["container_1"]
         }
       ]

@@ -24,6 +24,21 @@ public class ContainerManager
             }
         }
     }
+    public void StartCleanupTask()
+    {
+        Thread cleanupThread = new Thread(() =>
+        {
+            while (true)
+            {
+                Thread.Sleep(30000); // Vérifie toutes les 30 secondes
+                CleanupInactiveContainers();
+            }
+        })
+        {
+            IsBackground = true
+        };
+        cleanupThread.Start();
+    }
 
     /// <summary>
     /// Nettoie les Containers inactifs.
@@ -58,13 +73,14 @@ public class ContainerManager
         }
     }
 
-    public List<(string, int)> GetActiveContainers()
+    public List<(string Name, string IP, int Port)> GetActiveContainers()
     {
         lock (_lock)
         {
-            return _containers.Values.Select(c => (c.IP, c.Port)).ToList();
+            return _containers.Select(c => (c.Key, c.Value.IP, c.Value.Port)).ToList();
         }
     }
+
 
     public object GetFirstContainerIp()
     {
