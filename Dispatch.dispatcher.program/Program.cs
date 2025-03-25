@@ -36,8 +36,11 @@ public class Program
         // Gestion des fichiers 
         IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer, new FileHasher(), containerManager);
         
+        // Gestion du catalogue
+        IFileCatalogManager fileCatalogManager = new FileCatalogManager(config);
+        
         // Gestion des utilisateurs
-        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
+        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager, fileCatalogManager);
         
         // Gestion des tasks
         TaskDispatcher dispatcher = new TaskDispatcher(fileManager, new FileSender(tcpContainer));

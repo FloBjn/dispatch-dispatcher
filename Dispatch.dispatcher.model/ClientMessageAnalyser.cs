@@ -25,8 +25,6 @@ public class ClientMessageAnalyser
         // Étape 1 : Si le client attend un contenu de fichier, on traite ce contenu
         if (activeClient.CurrentFile != null && activeClient.AwaitingUploadContent )
         {            
-            Console.WriteLine("📥 Contenu de fichier reçu, traitement en cours...");
-            
             int numberContentMessages = activeClient.CurrentFile.FileSize / 1024;
             _fileManager.Encrypte(activeClient.CurrentFile, message);
 
@@ -75,7 +73,6 @@ public class ClientMessageAnalyser
 
             activeClient.AwaitingUploadContent = true;
 
-            Console.WriteLine($"📝 Requête d'UPLOAD reçue pour {fileName} ({fileSize} octets). En attente de contenu...");
 
             return null;
         }
