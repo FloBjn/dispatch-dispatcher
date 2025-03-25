@@ -25,8 +25,11 @@ public class Program
         // Gestion des fichiers 
         IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer, new FileHasher());
         
+        // Gestion du catalogue
+        IFileCatalogManager fileCatalogManager = new FileCatalogManager(config);
+        
         // Gestion des utilisateurs
-        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
+        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager, fileCatalogManager);
         
         // Serveur TCP qui écoute les clients
         var server = new TcpServer(config);

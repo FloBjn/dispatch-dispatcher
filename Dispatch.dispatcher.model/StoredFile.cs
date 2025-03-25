@@ -2,6 +2,9 @@
 
 public class StoredFile
 {
-    public string HashFileName { get; set; } 
+    public string FileName { get; set; } 
+    
+    public int Size { get; set; }
+    
     public List<string> Containers { get; set; } = new List<string>();
 }

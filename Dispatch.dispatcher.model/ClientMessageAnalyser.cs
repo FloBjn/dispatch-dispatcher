@@ -13,16 +13,20 @@ public class ClientMessageAnalyser
 
     private readonly IFileManager _fileManager;
     private OurFile? _currentOurFile;
+    
+    private readonly IFileCatalogManager _fileCatalogManager;
 
     /// <summary>
     /// Initialise une nouvelle instance de `ClientMessageAnalyser` avec un gestionnaire d'utilisateurs.
     /// </summary>
     /// <param name="userManager">Instance de `IUserManager` permettant la gestion des utilisateurs.</param>
     /// <param name="fileManager"></param>
-    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager)
+    /// <param name="fileCatalogManager">Instance de IFileCatalogManager permettant la gestion du catalogue de fichier lié a un utilisateur</param>
+    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager, IFileCatalogManager fileCatalogManager)
     {
         _userManager = userManager;
         _fileManager = fileManager;
+        _fileCatalogManager = fileCatalogManager;
     }
 
     /// <summary>
@@ -167,6 +171,7 @@ public class ClientMessageAnalyser
                 try
                 {
                     Console.WriteLine("Demande d'un catalogue du client");
+                    
                     // TODO : récupéré les fichiers du client connecté avec _connectedUser
                     return "Envoie du catalogue";
                 }

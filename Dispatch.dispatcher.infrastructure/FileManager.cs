@@ -48,7 +48,7 @@ public class FileManager : IFileManager
             // Ajouter le fichier à la liste de l'utilisateur
             userWithFiles.Files.Add(new StoredFile
             {
-                HashFileName = hashFileName,
+                FileName = hashFileName,
                 Containers = new List<string> { container }
             });
 

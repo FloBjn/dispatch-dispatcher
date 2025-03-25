@@ -11,9 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="ressources\users.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+      <Folder Include="ressources\" />
     </ItemGroup>
 
 </Project>
