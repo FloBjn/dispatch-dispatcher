@@ -26,9 +26,6 @@ public class Presenter
     /// </summary>
     public async Task StartAsync()
     {
-        Thread multicastThread = new Thread(_multicastListener.StartListening);
-        
-        multicastThread.Start();
         await _unicastServer.StartAsync();
     }
 

@@ -44,6 +44,8 @@ public class Program
         
         MulticastListener multicastListener = new MulticastListener(config, containerManager);
         
+        multicastListener.StartListening();
+        
         // Interface utilisateur
         IMainView view = new View();
         var presenter = new Presenter(view, server, multicastListener, analyser);

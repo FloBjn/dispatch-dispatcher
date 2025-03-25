@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 
@@ -21,6 +22,8 @@ public class MulticastListener
         _networkInterfaceName = config.NetworkInterface; 
         _containerManager = containerManager;
     }
+
+    public Func<string, Task> OnMessageReceived { get; set; }
 
     /// <summary>
     /// Démarre l'écoute des messages multicast envoyés par les Containers.
@@ -71,6 +74,12 @@ public class MulticastListener
                     Console.WriteLine($"📡 Reçu depuis {result.RemoteEndPoint}: {message}");
 
                     Console.WriteLine($"Message reçu : {message}");
+                    
+                    if (OnMessageReceived != null)
+                    {
+                        await OnMessageReceived.Invoke(message);
+                    }
+
 
                     if (DispatcherProtocol.ParseAlive(message) is (string containerName, int tcpPort))
                     {
