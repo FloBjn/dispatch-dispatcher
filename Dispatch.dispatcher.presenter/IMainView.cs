@@ -6,4 +6,6 @@ public interface IMainView
     
     void DisplayMessageReceivedClient(string message);
     void DisplayMessageReceivedContainer(string message);
+    void DisplayMainThreadMessage(string message);
+
 }

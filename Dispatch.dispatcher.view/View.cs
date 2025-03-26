@@ -18,4 +18,9 @@ public class View : IMainView
     {
         Console.WriteLine("[MULTICAST RECEIVED CONTAINER] : " + message);
     }
+    public void DisplayMainThreadMessage(string message)
+    {
+        Console.WriteLine("[MAIN THREAD] : " + message);
+    }
+
 }

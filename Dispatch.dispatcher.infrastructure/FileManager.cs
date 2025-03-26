@@ -40,7 +40,7 @@ public class FileManager : IFileManager
             // Ajout du fichier avec les Containers spécifiés dans la task
             userWithFiles.Files.Add(new StoredFile
             {
-                HashFileName = task.FileName, // Ici tu dois passer le hash, pas le nom original
+                FileName = task.FileName, // Ici tu dois passer le hash, pas le nom original
                 Containers = task.ContainerId.ToList()
             });
 

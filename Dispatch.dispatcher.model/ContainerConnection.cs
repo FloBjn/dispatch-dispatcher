@@ -40,11 +40,11 @@ public class ContainerConnection
                 connection.Connect(_ip, _port);
                 connection.SendMessage(message);
                 connection.Disconnect();
-                Console.WriteLine($"✅ Message envoyé à {_name}");
+                Console.WriteLine($"Message envoyé à {_name}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Erreur d'envoi vers {_name} : {ex.Message}");
+                Console.WriteLine($"Erreur d'envoi vers {_name} : {ex.Message}");
             }
         }
     }

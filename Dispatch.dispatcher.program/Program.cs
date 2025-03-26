@@ -31,7 +31,7 @@ public class Program
         containerManager.StartCleanupTask();
         
         //TCP pour communiquer avec le container
-        var tcpContainer = new TcpContainer(containerManager, new UnicastConnection());
+        var tcpContainer = new TcpContainer();
         
         // Gestion des fichiers 
         IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer, new FileHasher(), containerManager);

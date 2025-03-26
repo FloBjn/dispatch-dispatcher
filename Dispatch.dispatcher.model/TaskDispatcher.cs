@@ -14,8 +14,6 @@ public class TaskDispatcher : ITaskDispatcher
     {
         try
         {
-            Console.WriteLine($"[Dispatcher] Exécution de la tâche : {task.Type}");
-
             switch (task.Type)
             {
                 case TaskItem.TaskType.Send:

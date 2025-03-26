@@ -27,12 +27,10 @@ public class TaskManager
                 try
                 {
                     var task = _taskQueue.Take(token);
-                    Console.WriteLine($"[MainThread] Tâche reçue : {task.Type} - {task.FileName}");
                     _dispatcher.Dispatch(task);
                 }
                 catch (OperationCanceledException)
                 {
-                    Console.WriteLine("[MainThread] Arrêt demandé.");
                     break;
                 }
                 catch (Exception ex)

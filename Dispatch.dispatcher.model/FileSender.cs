@@ -11,17 +11,12 @@
 
         public void SendFile(TaskItem task)
         {
-            Console.WriteLine("📡 Envoi du fichier à tous les Containers actifs...");
-
             if (string.IsNullOrEmpty(task.Command))
             {
-                throw new ArgumentException("❌ La commande à envoyer est vide !");
+                throw new ArgumentException("La commande à envoyer est vide !");
             }
 
-            // 🧠 Utilise la version non-async (multithreadée en interne)
             _tcpContainer.SendMessageToAll(task.Command);
-
-            Console.WriteLine("✅ Commande envoyée à tous les Containers.");
         }
     }
 }

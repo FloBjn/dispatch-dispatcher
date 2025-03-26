@@ -55,11 +55,11 @@ public class MulticastListener
                 try
                 {
                     udpClient.JoinMulticastGroup(IPAddress.Parse(_multicastAdr), ip);
-                    Console.WriteLine($"✅ Interface {nic.Name} ({ip}) rejointe au groupe multicast.");
+                    Console.WriteLine($"Interface {nic.Name} ({ip}) rejointe au groupe multicast.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠ Impossible de joindre le groupe multicast via {nic.Name} ({ip}) : {ex.Message}");
+                    Console.WriteLine($"Impossible de joindre le groupe multicast via {nic.Name} ({ip}) : {ex.Message}");
                 }
             }
 
@@ -73,9 +73,6 @@ public class MulticastListener
                     UdpReceiveResult result = await udpClient.ReceiveAsync();
                     
                     string message = Encoding.UTF8.GetString(result.Buffer);
-                    Console.WriteLine($"📡 Reçu depuis {result.RemoteEndPoint}: {message}");
-
-                    Console.WriteLine($"Message reçu : {message}");
                     
                     if (OnMessageContainerReceived != null)
                     {
@@ -90,7 +87,6 @@ public class MulticastListener
 
                         _containerManager.AddOrUpdateContainer(containerName, containerIp, tcpPort);
 
-                        // ➕ Nouveau : informer le TcpContainer
                         _tcpContainer.AddOrUpdateConnection(containerName, containerIp, tcpPort);
                     }
 
@@ -101,7 +97,7 @@ public class MulticastListener
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠Erreur dans l'écoute multicast : {ex.Message}");
+                    Console.WriteLine($"Erreur dans l'écoute multicast : {ex.Message}");
                 }
             }
         })
@@ -109,15 +105,6 @@ public class MulticastListener
             IsBackground = true
         };
         multicastThread.Start();
-    }
-
-    /// <summary>
-    /// 🔍 Trouve une interface réseau spécifique en fonction de son nom.
-    /// </summary>
-    private static NetworkInterface? GetNetworkInterface(string interfaceName)
-    {
-        return NetworkInterface.GetAllNetworkInterfaces()
-            .FirstOrDefault(nic => nic.Name.Equals(interfaceName, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

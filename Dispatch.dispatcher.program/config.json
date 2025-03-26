@@ -16,7 +16,7 @@
       },
       "files": [
         {
-          "hash_nomfichier": "9a1b3c5d... (SHA3-384 du nom du fichier)",
+          "FileName": "9a1b3c5d... (SHA3-384 du nom du fichier)",
           "containers": ["container_1"]
         }
       ]
