@@ -40,7 +40,7 @@ public class Program
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
         
         // Serveur TCP qui écoute les clients
-        var server = new TcpServer(config);
+        var server = new TcpServer(config, analyser);
         
         MulticastListener multicastListener = new MulticastListener(config, containerManager);
         
@@ -48,7 +48,7 @@ public class Program
         
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server, multicastListener, analyser);
+        var presenter = new Presenter(view, server, multicastListener, new UserManager(config));
         
         // Démarrage du programme
         presenter.StartAsync().Wait();

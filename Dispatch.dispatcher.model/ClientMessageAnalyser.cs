@@ -218,4 +218,27 @@ public class ClientMessageAnalyser
 
         return "";
     }
+    
+    public TaskItem AnalyseMessage(string message, string user)
+    {
+        // upload
+        if (DispatcherProtocol.ParseUpload(message) is (string fileName, int size1))
+        {
+            return new TaskItem(TaskItem.TaskType.Send, fileName, "GET", user, new List<string>());
+        }
+        
+        // download
+        if (DispatcherProtocol.ParseDownload(message) == "")
+        {
+            return new TaskItem(TaskItem.TaskType.Receive, "", "GET", user, new List<string>());
+        }
+        
+        // purge
+        if (DispatcherProtocol.ParsePurge(message) == "")
+        {
+            return new TaskItem(TaskItem.TaskType.Delete, "", "DELETE", user, new List<string>());
+        }
+
+        throw new NotImplementedException();
+    }
 }

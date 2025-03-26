@@ -23,7 +23,7 @@ public class MulticastListener
         _containerManager = containerManager;
     }
 
-    public Func<string, Task> OnMessageReceived { get; set; }
+    public Func<string, Task> OnMessageContainerReceived { get; set; }
 
     /// <summary>
     /// Démarre l'écoute des messages multicast envoyés par les Containers.
@@ -75,9 +75,9 @@ public class MulticastListener
 
                     Console.WriteLine($"Message reçu : {message}");
                     
-                    if (OnMessageReceived != null)
+                    if (OnMessageContainerReceived != null)
                     {
-                        await OnMessageReceived.Invoke(message);
+                        await OnMessageContainerReceived.Invoke(message);
                     }
 
 
