@@ -9,15 +9,17 @@ public class Presenter
     private readonly TcpServer _unicastServer;
     private readonly MulticastListener _multicastListener;
     private readonly IUserManager _userManager;
+    private readonly TaskManager _taskManager;
 
     public Presenter(IMainView view, TcpServer unicastServer,
-        MulticastListener multicastListener, IUserManager userManager)
+        MulticastListener multicastListener, IUserManager userManager, TaskManager taskManager)
     {
         _view = view;
         _unicastServer = unicastServer;
         _multicastListener = multicastListener;
         _userManager = userManager;
-        
+        _taskManager = taskManager;
+
         _multicastListener.OnMessageContainerReceived += ShowMessageContainer;
         _unicastServer.OnTaskReceived += AnalyseTaskClient;
         _unicastServer.OnLoginReceived += LoginClient;
@@ -27,8 +29,9 @@ public class Presenter
     /// <summary>
     /// Démarre le serveur unicast
     /// </summary>
-    public async Task StartAsync()
+    public async Task StartAsync(CancellationToken token)
     {
+        _taskManager.Start(token);
         await _unicastServer.StartAsync();
     }
     
@@ -51,9 +54,9 @@ public class Presenter
 
     private Task<string> AnalyseTaskClient(TaskItem task)
     {
-        // Ajouter la task à la liste des tâches
-
-        throw new NotImplementedException();
+        _taskManager.AddTask(task);
+        _view.DisplayMessageReceivedClient($"Tâche ajoutée à la file : {task.Type} - {task.FileName}");
+        return Task.FromResult("TASK_RECEIVED");
     }
     
     /// <summary>

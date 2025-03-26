@@ -50,4 +50,6 @@ public class TaskItem(
     /// Statut actuel de la tâche (en cours, terminée, erreur).
     /// </summary>
     public TaskStatus Status { get; set; } = TaskStatus.InProgress;
+    
+    
 }

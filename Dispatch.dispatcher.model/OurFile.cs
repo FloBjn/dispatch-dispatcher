@@ -20,6 +20,7 @@ public class OurFile
             Aad = Encoding.UTF8.GetBytes(_fileName);
         }
     }
+    
 
     public int FileSize
     {
@@ -38,6 +39,10 @@ public class OurFile
     public byte[] Iv { get; set; } // Signifie Initialisation Vector --> sers au chiffrement AESGCM
     public byte[] Aad { get; set; } // Signifie Additional Authenticated Data --> sers également au chiffrement AESGCM
     public byte[] Tag { get; set; }
+    
+    public string HashFileName { get; set; } = "";
+    public string HashFileContent { get; set; } = "";
+    public int CurrentContentNumber { get; set; }
 
     public OurFile()
     {

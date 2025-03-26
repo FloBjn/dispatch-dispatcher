@@ -7,6 +7,7 @@ namespace Dispatch.dispatcher.model;
 /// </summary>
 public class TcpContainer
 {
+    private readonly Dictionary<string, ContainerConnection> _connections = new();
     private readonly ContainerManager _containerManager;
     private readonly UnicastConnection _connection;
 
@@ -20,28 +21,13 @@ public class TcpContainer
     /// Envoie un message à **tous** les Containers actifs en parallèle.
     /// </summary>
     /// <param name="message">Message à envoyer</param>
-    public async Task SendMessageToAllAsync(string message)
+    public void SendMessageToAll(string message)
     {
-        var activeContainers = _containerManager.GetActiveContainers();
-        if (activeContainers.Count == 0)
+        foreach (var conn in _connections.Values)
         {
-            Console.WriteLine("Aucun Container actif trouvé !");
-            return;
+            conn.EnqueueMessage(message);
         }
-
-        Console.WriteLine($"Envoi du message à {activeContainers.Count} Containers...");
-
-        // Créer une tâche pour chaque envoi et les exécuter en parallèle
-        var sendTasks = activeContainers
-            .Select(container => Task.Run(() => SendMessage(container.IP, container.Port, message)))
-            .ToList();
-
-        // Attendre la fin de tous les envois
-        await Task.WhenAll(sendTasks);
-
-        Console.WriteLine("Message envoyé à tous les Containers !");
     }
-
     /// <summary>
     /// Envoie un message à un container spécifique via TCP.
     /// </summary>
@@ -57,6 +43,14 @@ public class TcpContainer
         catch (Exception ex)
         {
             Console.WriteLine($"Erreur d'envoi vers {ip}:{port} : {ex.Message}");
+        }
+    }
+    public void AddOrUpdateConnection(string name, string ip, int port)
+    {
+        if (!_connections.ContainsKey(name))
+        {
+            Console.WriteLine($"🔌 Initialisation du thread de communication pour {name}...");
+            _connections[name] = new ContainerConnection(name, ip, port);
         }
     }
 }

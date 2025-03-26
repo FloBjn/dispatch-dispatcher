@@ -13,7 +13,7 @@ public class TcpServer
     private TcpListener _tcpListener;
     private bool _isRunning;
     private readonly ClientMessageAnalyser _messageAnalyser;
-    private readonly Dictionary<TcpClient, string> _activeClients = new(); 
+    private readonly List<Client> _activeClients = new();
     
     public event Func<TaskItem, Task<string>>? OnTaskReceived;    
     
@@ -49,11 +49,11 @@ public class TcpServer
     /// Gère une connexion client via TLS.
     /// </summary>
     /// <param name="client"></param>
-    private async Task HandleClientAsync(TcpClient client)
+    private async Task HandleClientAsync(TcpClient tcpClient)
     {
-        using (client)
+        using (tcpClient)
         {
-            await using NetworkStream networkStream = client.GetStream();
+            await using NetworkStream networkStream = tcpClient.GetStream();
             await using SslStream sslStream = new SslStream(networkStream, false);
 
             try
@@ -65,7 +65,7 @@ public class TcpServer
 
                 await sslStream.AuthenticateAsServerAsync(options);
 
-                while (client.Connected)
+                while (tcpClient.Connected)
                 {
                     var message = await ReceiveMessageAsync(sslStream);
                     
@@ -86,31 +86,43 @@ public class TcpServer
                         if (response == DispatcherProtocol.BuildLoginOk())
                         {
                             // TODO: Retenir le client connecté
-                            _activeClients.Add(client, username);
+                            var client = new Client(tcpClient, username, false);
                         }
                         
                     } else if (DispatcherProtocol.ParseRegister(message) is (string newUser, string newPassword))
                     {
                         response = await OnRegisterReceived.Invoke(newUser, newPassword);
+                        
+                        if (response == DispatcherProtocol.BuildLoginOk())
+                        {
+                            // TODO: Retenir le client connecté
+                            var client = new Client(tcpClient, newUser, false);
+                            _activeClients.Add(client);
+                        }
                     }
                     else if (DispatcherProtocol.ParseCatalogue(message) == "")
                     {
                         // TODO: Gérer le catalogue
+                        response = DispatcherProtocol.BuildCatalogue();
                     }
                     else
                     {
                         // TODO: Voir si le client est connecté
-                        if (!_activeClients.ContainsKey(client))
+                        var activeClient = _activeClients.FirstOrDefault(c => c.TcpClient == tcpClient);
+
+                        if (activeClient == null)
                         {
                             response = DispatcherProtocol.BuildLoginError();
                         }
-                        // TODO: Récupérer le client qui a envoyé la tâche
-                        var taskItem = _messageAnalyser.AnalyseMessage(message, _activeClients[client]);
-                        
-                        if (OnTaskReceived != null)
+                        else
                         {
-                            response = await OnTaskReceived.Invoke(taskItem);
-                            await SendResponseAsync(sslStream, response);
+                            var taskItem = _messageAnalyser.AnalyseMessage(message, activeClient);
+
+                            if (taskItem != null && OnTaskReceived != null)
+                            {
+                                response = await OnTaskReceived.Invoke(taskItem);
+                                await SendResponseAsync(sslStream, response);
+                            }
                         }
                     }
                     

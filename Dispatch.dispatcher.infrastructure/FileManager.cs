@@ -9,14 +9,12 @@ public class FileManager : IFileManager
 {
     private FileEncryptor _encryptor;
     private FileHasher _hasher;
-    private TcpContainer _tcpContainer;
     private ContainerManager _containerManager;
 
     public FileManager(FileEncryptor encryptor, TcpContainer tcpContainer, FileHasher hasher, ContainerManager containerManager)
     {
         _encryptor = encryptor;
         _hasher = hasher;
-        _tcpContainer = tcpContainer;
         _containerManager = containerManager;
     }
     
@@ -25,49 +23,37 @@ public class FileManager : IFileManager
     /// </summary>
     /// <param name="user"></param>
     /// <param name="ourFile"></param>
-    public void SaveFile(OurFile ourFile, string username)
+    public void SaveFile(TaskItem task)
     {
-        Console.WriteLine("Mise à jour du fichier de configuration avec le fichier uploadé...");
+        Console.WriteLine("💾 Mise à jour du fichier de configuration avec la tâche...");
 
         try
         {
-            // Charger la configuration actuelle
             var config = Config.Load("config.json");
 
-            // Trouver l'utilisateur correspondant
-            var userWithFiles = config.Users.Find(u => u.User.Username == username);
+            var userWithFiles = config.Users.Find(u => u.User.Username == task.UserName);
             if (userWithFiles == null)
             {
-                throw new Exception($"Utilisateur {username} non trouvé dans la configuration !");
+                throw new Exception($"Utilisateur {task.UserName} non trouvé dans la configuration !");
             }
-            
-            // Générer le hash du nom du fichier (SHA3-384)
-            var (hashFileName, hashFileContent) = _hasher.HashFile(ourFile); 
 
-            // Déterminer le container de stockage 
-            var activeContainers = _containerManager.GetActiveContainers();
-            if (activeContainers.Count == 0)
-            {
-                throw new Exception("Aucun Container actif trouvé !");
-            }
-            
-            // Ajouter le fichier à la liste de l'utilisateur
+            // Ajout du fichier avec les Containers spécifiés dans la task
             userWithFiles.Files.Add(new StoredFile
             {
-                HashFileName = hashFileName,
-                Containers = activeContainers.Select(c => c.Name).ToList() // Liste complète des Containers actifs
+                HashFileName = task.FileName, // Ici tu dois passer le hash, pas le nom original
+                Containers = task.ContainerId.ToList()
             });
 
-            // Sauvegarder la configuration mise à jour
             config.Save("config.json");
 
-            Console.WriteLine($"Fichier {ourFile.FileName} ajouté pour l'utilisateur {username} !");
+            Console.WriteLine($"✅ Tâche enregistrée pour {task.UserName} dans config.json.");
         }
         catch (Exception ex)
         {
-            throw new Exception($"Erreur lors de la mise à jour du fichier de configuration : {ex.Message}");
+            throw new Exception($"Erreur dans SaveFile(TaskItem) : {ex.Message}");
         }
     }
+
 
 
     public void Encrypte(OurFile ourFile, string content)
@@ -76,7 +62,7 @@ public class FileManager : IFileManager
         Console.WriteLine("Cryptage... ");
         _encryptor.Encrypte(ourFile, content);
     }
-
+    /*
     public void SendFile(OurFile ourFile)
     {
         Console.WriteLine("📡 Envoi du fichier à tous les Containers actifs...");
@@ -90,12 +76,13 @@ public class FileManager : IFileManager
         var hashedFile = _hasher.HashFile(ourFile);
         var content = Encoding.UTF8.GetString(ourFile.Content);
 
-        string message = $"POST {hashedFile.name} {ourFile.FileSize} {hashedFile.content}\n{content}";
+        string message = $"POST {hashedFile.hashFileName} {ourFile.FileSize} {hashedFile.hashFileContent}\n{content}";
 
         _tcpContainer.SendMessageToAllAsync(message).Wait(); // Bloque jusqu'à la fin de l'exécution
 
         Console.WriteLine("✅ Fichier envoyé à tous les Containers !");
     }
+    */
 
 
     /// <summary>

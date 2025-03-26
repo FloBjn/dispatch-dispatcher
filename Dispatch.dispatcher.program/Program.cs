@@ -39,18 +39,25 @@ public class Program
         // Gestion des utilisateurs
         ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
         
+        // Gestion des tasks
+        TaskDispatcher dispatcher = new TaskDispatcher(fileManager, new FileSender(tcpContainer));
+        TaskManager taskManager = new TaskManager(dispatcher);
+        
         // Serveur TCP qui écoute les clients
         var server = new TcpServer(config, analyser);
         
-        MulticastListener multicastListener = new MulticastListener(config, containerManager);
+        MulticastListener multicastListener = new MulticastListener(config, containerManager, tcpContainer);
         
         multicastListener.StartListening();
         
+         
+        
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server, multicastListener, new UserManager(config));
-        
+        var presenter = new Presenter(view, server, multicastListener, new UserManager(config), taskManager);
+        var cts = new CancellationTokenSource();
+
         // Démarrage du programme
-        presenter.StartAsync().Wait();
+        presenter.StartAsync(cts.Token).Wait();
     }
 }

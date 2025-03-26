@@ -14,13 +14,15 @@ public class MulticastListener
     private readonly int _multicastPort;
     private readonly string _networkInterfaceName;
     private readonly ContainerManager _containerManager;
+    private readonly TcpContainer _tcpContainer;
 
-    public MulticastListener(Config config, ContainerManager containerManager)
+    public MulticastListener(Config config, ContainerManager containerManager, TcpContainer tcpContainer)
     {
         _multicastAdr = config.MulticastAddress;
         _multicastPort = config.MulticastPort;
         _networkInterfaceName = config.NetworkInterface; 
         _containerManager = containerManager;
+        _tcpContainer = tcpContainer;
     }
 
     public Func<string, Task> OnMessageContainerReceived { get; set; }
@@ -85,9 +87,13 @@ public class MulticastListener
                     {
                         string containerIp = result.RemoteEndPoint.Address.ToString();
                         Console.WriteLine($"Nouveau Container détecté : {containerName} ({containerIp}:{tcpPort})");
-    
+
                         _containerManager.AddOrUpdateContainer(containerName, containerIp, tcpPort);
+
+                        // ➕ Nouveau : informer le TcpContainer
+                        _tcpContainer.AddOrUpdateConnection(containerName, containerIp, tcpPort);
                     }
+
                     else
                     {
                         Console.WriteLine($"Message ignoré (format invalide) : {message}");
