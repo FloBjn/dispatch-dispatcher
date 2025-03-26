@@ -93,7 +93,10 @@ public class TcpServer
                     {
                         response = await OnRegisterReceived.Invoke(newUser, newPassword);
                     }
-                    // TODO: Gérer le catalogue
+                    else if (DispatcherProtocol.ParseCatalogue(message) == "")
+                    {
+                        // TODO: Gérer le catalogue
+                    }
                     else
                     {
                         // TODO: Voir si le client est connecté
