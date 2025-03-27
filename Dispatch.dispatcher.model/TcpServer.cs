@@ -1,8 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
-using System.Text;
 
 namespace Dispatch.dispatcher.model;
 
@@ -14,11 +12,9 @@ public class TcpServer
     private bool _isRunning;
     private readonly ClientMessageAnalyser _messageAnalyser;
     private readonly List<Client> _activeClients = new();
-    
-    public event Func<TaskItem, Task<string>>? OnTaskReceived;    
-    
+
+    public event Func<TaskItem, Task<string>>? OnTaskReceived;
     public event Func<string, string, Task<string>> OnLoginReceived;
-    
     public event Func<string, string, Task<string>> OnRegisterReceived;
 
     public TcpServer(Config config, ClientMessageAnalyser messageAnalyser)
@@ -28,9 +24,6 @@ public class TcpServer
         _messageAnalyser = messageAnalyser;
     }
 
-    /// <summary>
-    /// Démarre le serveur TLS et écoute les connexions entrantes.
-    /// </summary>
     public async Task StartAsync()
     {
         _tcpListener = new TcpListener(IPAddress.Any, _config.UnicastPort);
@@ -40,132 +33,68 @@ public class TcpServer
         while (_isRunning)
         {
             var client = await _tcpListener.AcceptTcpClientAsync();
-
             _ = Task.Run(() => HandleClientAsync(client));
         }
     }
 
-    /// <summary>
-    /// Gère une connexion client via TLS.
-    /// </summary>
-    /// <param name="client"></param>
     private async Task HandleClientAsync(TcpClient tcpClient)
     {
-        using (tcpClient)
+        var handler = new TlsConnectionHandler(
+            tcpClient,
+            _serverCertificate,
+            async (message) => await ProcessMessageAsync(message, tcpClient)
+        );
+
+        await handler.HandleConnectionAsync();
+    }
+
+    private async Task<string> ProcessMessageAsync(string message, TcpClient tcpClient)
+    {
+        Console.WriteLine($"Message reçu : {message}");
+        var response = "";
+
+        if (DispatcherProtocol.ParseLogin(message) is (string username, string password))
         {
-            await using NetworkStream networkStream = tcpClient.GetStream();
-            await using SslStream sslStream = new SslStream(networkStream, false);
-
-            try
+            response = await OnLoginReceived.Invoke(username, password);
+            if (response == DispatcherProtocol.BuildLoginOk())
             {
-                var options = new SslServerAuthenticationOptions
+                var client = new Client(tcpClient, username, false);
+                _activeClients.Add(client);
+            }
+        }
+        else if (DispatcherProtocol.ParseRegister(message) is (string newUser, string newPassword))
+        {
+            response = await OnRegisterReceived.Invoke(newUser, newPassword);
+            if (response == DispatcherProtocol.BuildLoginOk())
+            {
+                var client = new Client(tcpClient, newUser, false);
+                _activeClients.Add(client);
+            }
+        }
+        else if (DispatcherProtocol.ParseCatalogue(message) == "")
+        {
+            response = DispatcherProtocol.BuildCatalogue();
+        }
+        else
+        {
+            var activeClient = _activeClients.FirstOrDefault(c => c.TcpClient == tcpClient);
+            if (activeClient == null)
+            {
+                response = DispatcherProtocol.BuildLoginError();
+            }
+            else
+            {
+                var taskItem = _messageAnalyser.AnalyseMessage(message, activeClient);
+                if (taskItem != null && OnTaskReceived != null)
                 {
-                    ServerCertificate = _serverCertificate
-                };
-
-                await sslStream.AuthenticateAsServerAsync(options);
-
-                while (tcpClient.Connected)
-                {
-                    var message = await ReceiveMessageAsync(sslStream);
-                    
-                    if (message == null)
-                    {
-                        Console.WriteLine("Client déconnecté.");
-                        break;
-                    }
-
-                    Console.WriteLine($"Message reçu : {message}");
-
-                    var response = "";
-                    
-                    if (DispatcherProtocol.ParseLogin(message) is (string username, string password))
-                    {
-                        response = await OnLoginReceived.Invoke(username, password);
-                        
-                        if (response == DispatcherProtocol.BuildLoginOk())
-                        {
-                            // TODO: Retenir le client connecté
-                            var client = new Client(tcpClient, username, false);
-                        }
-                        
-                    } else if (DispatcherProtocol.ParseRegister(message) is (string newUser, string newPassword))
-                    {
-                        response = await OnRegisterReceived.Invoke(newUser, newPassword);
-                        
-                        if (response == DispatcherProtocol.BuildLoginOk())
-                        {
-                            // TODO: Retenir le client connecté
-                            var client = new Client(tcpClient, newUser, false);
-                            _activeClients.Add(client);
-                        }
-                    }
-                    else if (DispatcherProtocol.ParseCatalogue(message) == "")
-                    {
-                        // TODO: Gérer le catalogue
-                        response = DispatcherProtocol.BuildCatalogue();
-                    }
-                    else
-                    {
-                        // TODO: Voir si le client est connecté
-                        var activeClient = _activeClients.FirstOrDefault(c => c.TcpClient == tcpClient);
-
-                        if (activeClient == null)
-                        {
-                            response = DispatcherProtocol.BuildLoginError();
-                        }
-                        else
-                        {
-                            var taskItem = _messageAnalyser.AnalyseMessage(message, activeClient);
-
-                            if (taskItem != null && OnTaskReceived != null)
-                            {
-                                response = await OnTaskReceived.Invoke(taskItem);
-                                await SendResponseAsync(sslStream, response);
-                            }
-                        }
-                    }
-                    
-                    // Renvoyer la réponse au client
-                    await SendResponseAsync(sslStream, response);
+                    response = await OnTaskReceived.Invoke(taskItem);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erreur TLS : {ex.Message}");
-            }
-        }
-    }
-
-
-    /// <summary>
-    /// Lit un message sécurisé du client.
-    /// </summary>
-    private async Task<string?> ReceiveMessageAsync(SslStream sslStream)
-    {
-        byte[] buffer = new byte[1024];
-        int bytesRead = await sslStream.ReadAsync(buffer, 0, buffer.Length);
-        
-        if (bytesRead == 0)
-        {
-            return null;
         }
 
-        return Encoding.UTF8.GetString(buffer, 0, bytesRead);
+        return response;
     }
 
-    /// <summary>
-    /// Envoie une réponse sécurisée au client.
-    /// </summary>
-    private async Task SendResponseAsync(SslStream sslStream, string response)
-    {
-        byte[] responseBytes = Encoding.UTF8.GetBytes(response);
-        await sslStream.WriteAsync(responseBytes, 0, responseBytes.Length);
-    }
-
-    /// <summary>
-    /// Stoppe le serveur.
-    /// </summary>
     public void Stop()
     {
         _isRunning = false;

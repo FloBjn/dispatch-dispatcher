@@ -89,5 +89,4 @@ public class TlsConnectionHandler
             await sslStream.FlushAsync();
         }
     }
-
 }
