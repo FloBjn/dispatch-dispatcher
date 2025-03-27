@@ -10,11 +10,13 @@ public class ClientMessageAnalyser
 {
     private readonly IUserManager _userManager;
     private readonly IFileManager _fileManager;
+    private readonly IFileCatalogManager _fileCatalogManager;
 
-    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager)
+    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager, IFileCatalogManager fileCatalogManager)
     {
         _userManager = userManager;
         _fileManager = fileManager;
+        _fileCatalogManager = fileCatalogManager;
     }
 
     /// <summary>
