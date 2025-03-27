@@ -1,80 +1,97 @@
-﻿namespace Dispatch.dispatcher.model
+﻿using System.Text;
+
+namespace Dispatch.dispatcher.model;
+
+/// <summary>
+/// Analyseur de messages clients reçus par le Dispatcher.
+/// Il identifie les commandes `LOGIN`, `REGISTER`, `UPLOAD`, etc. et effectue les actions appropriées.
+/// </summary>
+public class ClientMessageAnalyser
 {
-    /// <summary>
-    /// Analyseur de messages clients reçus par le Dispatcher.
-    /// Il identifie les commandes `LOGIN` et `REGISTER` envoyées par les clients et effectue les actions appropriées.
-    /// </summary>
-    public class ClientMessageAnalyser
+    private readonly IUserManager _userManager;
+    private readonly IFileManager _fileManager;
+
+    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager)
     {
-        private readonly IUserManager _userManager;
-        private User _connectedUser;
+        _userManager = userManager;
+        _fileManager = fileManager;
+    }
 
-        /// <summary>
-        /// Initialise une nouvelle instance de `ClientMessageAnalyser` avec un gestionnaire d'utilisateurs.
-        /// </summary>
-        /// <param name="userManager">Instance de `IUserManager` permettant la gestion des utilisateurs.</param>
-        public ClientMessageAnalyser(IUserManager userManager)
-        {
-            _userManager = userManager;
-        }
-
-        /// <summary>
-        /// Analyse un message client et déclenche l'action correspondante.
-        /// Si le message correspond à une commande `LOGIN`, il tente une authentification.
-        /// Si le message correspond à `REGISTER`, il enregistre un nouvel utilisateur.
-        /// Si le message correspond à 'UPLOAD', il ????????
-        /// </summary>
-        /// <param name="message">Le message client à analyser.</param>
-        public String Analyse(string message)
-        {
-            // 🔍 Vérification d'une tentative de connexion
-            if (DispatcherProtocol.ParseLogin(message) is (string username, string password))
-            {
-                Console.WriteLine($"Tentative de connexion : {username}");
-                if (_userManager.VerifyUser(username, password) != null)
-                {
-                    _connectedUser = _userManager.VerifyUser(username, password);
-                    return DispatcherProtocol.BuildLoginOk();
-                }
-                else
-                {
-                    return DispatcherProtocol.BuildLoginEr();
-                }
-            }
-
-            // 🔍 Vérification d'une tentative d'inscription
-            if (DispatcherProtocol.ParseRegister(message) is (string newUser, string newPassword))
-            {
-                Console.WriteLine($"Tentative d'enregistrement : {newUser}, Password : {newPassword}");
-
-                // Création d'un nouvel utilisateur
-                _connectedUser = new User
-                {
-                    Username = newUser,
-                    PasswordHash = newPassword, 
-                    AesKey = AesKeyGenerator.GenerateAesKey()
-                };
-
-                // Ajout de l'utilisateur au fichier JSON
-                _userManager.AddUser(_connectedUser);
-            }
+    /// <summary>
+    /// Analyse un message et retourne un TaskItem si applicable.
+    /// </summary>
+    public TaskItem? AnalyseMessage(string message, Client activeClient)
+    {
+        // Étape 1 : Si le client attend un contenu de fichier, on traite ce contenu
+        if (activeClient.CurrentFile != null && activeClient.AwaitingUploadContent )
+        {            
+            Console.WriteLine("📥 Contenu de fichier reçu, traitement en cours...");
             
-            // 🔍 Vérification d'une tentative d'upload
-            if (DispatcherProtocol.ParseUpload(message) is (string fileName, int size))
-            {
-                //TODO récupérer l'utilisateur pour le lier avec le fichier via le fileManager 
-                
-                Console.WriteLine($"Tentative d'upload du fichier : {fileName}, taille : {size}");
+            int numberContentMessages = activeClient.CurrentFile.FileSize / 1024;
+            _fileManager.Encrypte(activeClient.CurrentFile, message);
 
-                return "UPLOAD";
+            var fileHasher = new FileHasher();
+            var (hashFileName, hashFileContent) = fileHasher.HashFile(activeClient.CurrentFile);
+            activeClient.CurrentFile.HashFileName = hashFileName;
+            activeClient.CurrentFile.HashFileContent = hashFileContent;
+
+            string command = DispatcherProtocol.BuildPost(
+                activeClient.CurrentFile.HashFileName,
+                activeClient.CurrentFile.HashFileContent.Length,
+                activeClient.CurrentFile.HashFileContent
+            ) + "\r\n" + activeClient.CurrentFile.Content;
+
+            var task = new TaskItem(
+                TaskItem.TaskType.Send,
+                activeClient.CurrentFile.FileName,
+                command,
+                activeClient.Username,
+                new List<string> { "C1" } // TODO: Ajouter les containers approprié
+            );
+
+            if (activeClient.CurrentFile.CurrentContentNumber == numberContentMessages)
+            {
+                activeClient.AwaitingUploadContent = false;
+                activeClient.CurrentFile = null;
+                return task;
             }
 
-            if (String.IsNullOrEmpty(DispatcherProtocol.ParseCatalogue(message)))
-            {
-                // TODO : récupéré les fichiers du client connecté avec _connectedUser
-            }
-
-            return String.Empty;
+            return null;
         }
+
+        // Étape 2 : Détection d'une requête d'upload (en 2 temps)
+        if (DispatcherProtocol.ParseUpload(message) is (string fileName, int fileSize))
+        {
+            var fullUser = _userManager.GetUserByUsername(activeClient.Username);
+            if (fullUser == null)
+                throw new Exception("Utilisateur inconnu");
+
+            activeClient.CurrentFile = new OurFile
+            {
+                FileName = fileName,
+                FileSize = fileSize,
+                User = fullUser
+            };
+
+            activeClient.AwaitingUploadContent = true;
+
+            Console.WriteLine($"📝 Requête d'UPLOAD reçue pour {fileName} ({fileSize} octets). En attente de contenu...");
+
+            return null;
+        }
+
+        // Étape 3 : Download
+        if (DispatcherProtocol.ParseDownload(message) is string downloadFile)
+        {
+            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, "GET", activeClient.Username, new List<string>());
+        }
+
+        // Étape 4 : Purge
+        if (DispatcherProtocol.ParsePurge(message) is string purgeFile)
+        {
+            return new TaskItem(TaskItem.TaskType.Delete, purgeFile, "DELETE", activeClient.Username, new List<string>());
+        }
+
+        throw new NotImplementedException("Commande non reconnue ou non implémentée : " + message);
     }
 }

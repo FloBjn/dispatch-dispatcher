@@ -12,5 +12,7 @@
         public void AddUser(User user);
 
         public User? VerifyUser(string username, string password);
+        public User? GetUserByUsername(string username);
+
     }
 }

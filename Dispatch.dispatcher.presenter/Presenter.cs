@@ -1,54 +1,73 @@
-﻿using Dispatch.dispatcher.model;
+﻿using System.Collections.ObjectModel;
+using Dispatch.dispatcher.model;
 
 namespace Dispatch.dispatcher.presenter;
 
-public class Presenter(
-    IMainView view,
-    TcpServer server,
-    ClientMessageAnalyser analyser,
-    IFileManager fileManager)
+public class Presenter
 {
-    private bool fileUploadRequest = false;
-    private OurFile _currentOurFile = null;
-    public async Task StartAsync()
+    private readonly IMainView _view;
+    private readonly TcpServer _unicastServer;
+    private readonly MulticastListener _multicastListener;
+    private readonly IUserManager _userManager;
+    private readonly TaskManager _taskManager;
+
+    public Presenter(IMainView view, TcpServer unicastServer,
+        MulticastListener multicastListener, IUserManager userManager, TaskManager taskManager)
     {
-        server.OnMessageReceived += AnalyseMessageAsync;
-        await server.StartAsync();
+        _view = view;
+        _unicastServer = unicastServer;
+        _multicastListener = multicastListener;
+        _userManager = userManager;
+        _taskManager = taskManager;
+
+        _multicastListener.OnMessageContainerReceived += ShowMessageContainer;
+        _unicastServer.OnTaskReceived += AnalyseTaskClient;
+        _unicastServer.OnLoginReceived += LoginClient;
+        _unicastServer.OnRegisterReceived += RegisterClient;
     }
     
-    private Task<string> AnalyseMessageAsync(string message)
+    /// <summary>
+    /// Démarre le serveur unicast
+    /// </summary>
+    public async Task StartAsync(CancellationToken token)
     {
-        string response = analyser.Analyse(message);
-        
-        //Chiffrement des données du fichier UPLOAD si le cas à été détecté à la dernière analyse
-        if (fileUploadRequest)
+        _taskManager.Start(token);
+        await _unicastServer.StartAsync();
+    }
+    
+    private Task<string> RegisterClient(string userName, string password)
+    {
+        if (_userManager.VerifyUser(userName, password) != null)
         {
-            _currentOurFile.Content = message;
-            fileManager.Encrypte(_currentOurFile);
-            //TODO Envoyer le fichier une fois chiffrer grace au fileManager
-            fileUploadRequest = false;
-            _currentOurFile = null;
+            return Task.FromResult(DispatcherProtocol.BuildLoginError());
         }
-        //Détection du cas particulier UPLOAD
-        if (response.Equals("UPLOAD"))
-        {
-            var parsedResult = DispatcherProtocol.ParseUpload(message);
 
-            if (parsedResult.HasValue)
-            {
-                (string fileName, int size) = parsedResult.Value;
-                
-                _currentOurFile = new OurFile
-                {
-                    FileName = fileName,
-                    FileSize = size,
-                    //TODO récupérer l'utilisateur qui upload le fichier pour avoir sa clé AES
-                };
-            }
+        _userManager.AddUser(new User {Username = userName, PasswordHash = password, AesKey = AesKeyGenerator.GenerateAesKey()});
+        return Task.FromResult(DispatcherProtocol.BuildLoginOk());
+    }
 
-            fileUploadRequest = true;
-        }
-        
-        return Task.FromResult(string.IsNullOrEmpty(response) ? "Erreur lors de l'inscription" : response);
+    private Task<string> LoginClient(string userName, string password)
+    {
+        var user = _userManager.VerifyUser(userName, password);
+        return user != null ? Task.FromResult(DispatcherProtocol.BuildLoginOk()) : Task.FromResult(DispatcherProtocol.BuildLoginError());
+    }
+
+    private Task<string> AnalyseTaskClient(TaskItem task)
+    {
+        _view.DisplayMainThreadMessage($"Tâche reçue : {task.Type} - {task.FileName}");
+        _taskManager.AddTask(task);
+        _view.DisplayMainThreadMessage($"Tâche ajoutée à la file : {task.Type} - {task.FileName}");
+        return Task.FromResult("TASK_RECEIVED");
+    }
+    
+    /// <summary>
+    /// Montre le message reçu dans le container
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    private Task ShowMessageContainer(string message)
+    {
+        _view.DisplayMessageReceivedContainer(message);
+        return Task.FromResult("Message reçu");
     }
 }

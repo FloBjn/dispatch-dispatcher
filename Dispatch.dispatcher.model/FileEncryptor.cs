@@ -5,20 +5,16 @@ namespace Dispatch.dispatcher.model;
 
 public class FileEncryptor
 {
-    public string Encrypte(OurFile ourFile/*, User user*/)    //Besoin du User pour sa clé AES
+    public void Encrypte(OurFile ourFile, string content) 
     {
-        //TODO Vérifier si cette méthode n'a pas des failles de sécurité
-        //TODO Récupérer l'aes key de l'utilisateur 
-        var aes = Convert.FromBase64String(AesKeyGenerator.GenerateAesKey());
+        var aes = Convert.FromBase64String(ourFile.User.AesKey);
         
-        (ourFile.EncryptedContent, ourFile.Tag) = EncryptAESGCM(ourFile.Content, aes, ourFile.Iv, ourFile.Aad);
-        
-        return String.Empty;
+        (ourFile.Content, ourFile.Tag) = EncryptAesgcm(content, aes, ourFile.Iv, ourFile.Aad);
     }
     
-    private (byte[] encryptedText, byte[] tag) EncryptAESGCM(string text, byte[] aesKey, byte[] iv, byte[] aad)
+    private (byte[] encryptedText, byte[] tag) EncryptAesgcm(string text, byte[] aesKey, byte[] iv, byte[] aad)
     {
-        using (AesGcm aesGcm = new AesGcm(aesKey))
+        using (AesGcm aesGcm = new AesGcm(aesKey, 16))
         {
             byte[] textBytes = Encoding.UTF8.GetBytes(text);
             byte[] encryptedText = new byte[textBytes.Length];
@@ -29,7 +25,7 @@ public class FileEncryptor
         }
     }
     
-    private string DecryptAESGCM(byte[] encryptedText, byte[] tag, byte[] aesKey, byte[] iv, byte[] aad)
+    private string DecryptAesgcm(byte[] encryptedText, byte[] tag, byte[] aesKey, byte[] iv, byte[] aad)
     {
         using (AesGcm aesGcm = new AesGcm(aesKey))
         {
