@@ -48,5 +48,10 @@ namespace Dispatch.dispatcher.infrastructure
             _config.Save("config.json"); // Sauvegarde la config mise à jour
             Console.WriteLine($"Utilisateur {newUser.Username} ajouté avec succès !");
         }
+        public User? GetUserByUsername(string username)
+        {
+            var config = Config.Load("config.json");
+            return config.Users.FirstOrDefault(u => u.User.Username == username)?.User;
+        }
     }
 }

@@ -15,16 +15,29 @@ public class ContainerManager
             if (!_containers.ContainsKey(name))
             {
                 _containers[name] = new ContainerInfo { IP = ip, Port = port, LastSeen = DateTime.UtcNow };
-                Console.WriteLine($"Container ajouté : {name} ({ip}:{port})");
             }
             else
             {
                 _containers[name].IP = ip;
                 _containers[name].Port = port;
                 _containers[name].LastSeen = DateTime.UtcNow;
-                Console.WriteLine($"Mise à jour du Container : {name} ({ip}:{port})");
             }
         }
+    }
+    public void StartCleanupTask()
+    {
+        Thread cleanupThread = new Thread(() =>
+        {
+            while (true)
+            {
+                Thread.Sleep(30000); // Vérifie toutes les 30 secondes
+                CleanupInactiveContainers();
+            }
+        })
+        {
+            IsBackground = true
+        };
+        cleanupThread.Start();
     }
 
     /// <summary>
@@ -60,13 +73,14 @@ public class ContainerManager
         }
     }
 
-    public List<(string, int)> GetActiveContainers()
+    public List<(string Name, string IP, int Port)> GetActiveContainers()
     {
         lock (_lock)
         {
-            return _containers.Values.Select(c => (c.IP, c.Port)).ToList();
+            return _containers.Select(c => (c.Key, c.Value.IP, c.Value.Port)).ToList();
         }
     }
+
 
     public object GetFirstContainerIp()
     {

@@ -93,6 +93,9 @@ namespace Dispatch.dispatcher.model
 
         public static string BuildPost(string hashFilename, int size, string hashFileContent)
         {
+            Console.WriteLine($"→ hashFilename = {hashFilename}");
+            Console.WriteLine($"→ size = {size}");
+            Console.WriteLine($"→ hashFileContent = {hashFileContent}");
             if (!IsValid(hashFilename, HashFilename) || !IsValid(size.ToString(), Size) || !IsValid(hashFileContent, HashFileContent))
                 throw new ArgumentException("Format invalide pour POST.");
 
@@ -177,5 +180,15 @@ namespace Dispatch.dispatcher.model
         }
 
         private static bool IsValid(string value, string pattern) => Regex.IsMatch(value, $"^{pattern}$");
+
+        public static string BuildLoginError()
+        {
+            return "LOGIN_ERROR\r\n";
+        }
+
+        public static string BuildLoginOk()
+        {
+            return "LOGIN_OK\r\n";
+        }
     }
 }

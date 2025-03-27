@@ -5,21 +5,23 @@ namespace Dispatch.dispatcher.model;
 
 public class FileHasher
 {
-    public (string name, string content) HashFile(OurFile file)
+    public (string hashFileName, string hashFileContent) HashFile(OurFile file)
     {
         Console.WriteLine("Hashage du fichier en cours ...");
-        string name = file.FileName;
-        string content;
 
-        var byteContent = file.Content;
-        var byteName = Encoding.UTF8.GetBytes(name);
+        string hashFileName = ComputeSha384Hex(Encoding.UTF8.GetBytes(file.FileName));
+        string hashFileContent = ComputeSha384Hex(file.Content);
 
-        using (var sha384 = SHA384.Create())
-        {
-            content = BitConverter.ToString(byteContent).Replace("-", "").ToLower();
-            name = BitConverter.ToString(byteName).Replace("-", "").ToLower();
-        }
+        Console.WriteLine($"⸮ hashFilename = {hashFileName}");
+        Console.WriteLine($"⸮ hashFileContent = {hashFileContent}");
 
-        return (name, content);
+        return (hashFileName, hashFileContent);
+    }
+
+    private string ComputeSha384Hex(byte[] data)
+    {
+        using var sha384 = SHA384.Create();
+        byte[] hash = sha384.ComputeHash(data);
+        return BitConverter.ToString(hash).Replace("-", "").ToLower();
     }
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
@@ -13,14 +12,20 @@ public class TcpServer
     private readonly X509Certificate2 _serverCertificate;
     private TcpListener _tcpListener;
     private bool _isRunning;
+    private readonly ClientMessageAnalyser _messageAnalyser;
+    private readonly List<Client> _activeClients = new();
+    
+    public event Func<TaskItem, Task<string>>? OnTaskReceived;    
+    
+    public event Func<string, string, Task<string>> OnLoginReceived;
+    
+    public event Func<string, string, Task<string>> OnRegisterReceived;
 
-    // 📡 Événement pour transmettre les messages au `Presenter`
-    public event Func<string, Task<string>>? OnMessageReceived; 
-
-    public TcpServer(Config config)
+    public TcpServer(Config config, ClientMessageAnalyser messageAnalyser)
     {
         _config = config;
         _serverCertificate = new X509Certificate2(config.CertificatePath, config.CertificatePassword);
+        _messageAnalyser = messageAnalyser;
     }
 
     /// <summary>
@@ -31,12 +36,10 @@ public class TcpServer
         _tcpListener = new TcpListener(IPAddress.Any, _config.UnicastPort);
         _tcpListener.Start();
         _isRunning = true;
-        Console.WriteLine($"Serveur TLS démarré sur le port {_config.UnicastPort}...");
 
         while (_isRunning)
         {
             var client = await _tcpListener.AcceptTcpClientAsync();
-            Console.WriteLine($"Client sécurisé connecté : {client.Client.RemoteEndPoint}");
 
             _ = Task.Run(() => HandleClientAsync(client));
         }
@@ -46,47 +49,85 @@ public class TcpServer
     /// Gère une connexion client via TLS.
     /// </summary>
     /// <param name="client"></param>
-    private async Task HandleClientAsync(TcpClient client)
+    private async Task HandleClientAsync(TcpClient tcpClient)
     {
-        Console.WriteLine($"Client connecté : {client.Client.RemoteEndPoint}");
-    
-        using (client)
+        using (tcpClient)
         {
-            using NetworkStream networkStream = client.GetStream();
-            using SslStream sslStream = new SslStream(networkStream, false);
+            await using NetworkStream networkStream = tcpClient.GetStream();
+            await using SslStream sslStream = new SslStream(networkStream, false);
 
             try
             {
-                Console.WriteLine("Authentification TLS en cours...");
                 var options = new SslServerAuthenticationOptions
                 {
                     ServerCertificate = _serverCertificate
                 };
 
                 await sslStream.AuthenticateAsServerAsync(options);
-                Console.WriteLine($"Connexion TLS établie avec protocole : {sslStream.SslProtocol}");
 
-                while (client.Connected)
+                while (tcpClient.Connected)
                 {
-                    string? message = await ReceiveMessageAsync(sslStream);
-
-                    if (string.IsNullOrEmpty(message))
+                    var message = await ReceiveMessageAsync(sslStream);
+                    
+                    if (message == null)
                     {
-                        Console.WriteLine("Le client a fermé la connexion.");
+                        Console.WriteLine("Client déconnecté.");
                         break;
                     }
 
                     Console.WriteLine($"Message reçu : {message}");
 
-                    if (OnMessageReceived != null)
+                    var response = "";
+                    
+                    if (DispatcherProtocol.ParseLogin(message) is (string username, string password))
                     {
-                        string response = await OnMessageReceived.Invoke(message);
-                        await SendResponseAsync(sslStream, response);
+                        response = await OnLoginReceived.Invoke(username, password);
+                        
+                        if (response == DispatcherProtocol.BuildLoginOk())
+                        {
+                            // TODO: Retenir le client connecté
+                            var client = new Client(tcpClient, username, false);
+                        }
+                        
+                    } else if (DispatcherProtocol.ParseRegister(message) is (string newUser, string newPassword))
+                    {
+                        response = await OnRegisterReceived.Invoke(newUser, newPassword);
+                        
+                        if (response == DispatcherProtocol.BuildLoginOk())
+                        {
+                            // TODO: Retenir le client connecté
+                            var client = new Client(tcpClient, newUser, false);
+                            _activeClients.Add(client);
+                        }
+                    }
+                    else if (DispatcherProtocol.ParseCatalogue(message) == "")
+                    {
+                        // TODO: Gérer le catalogue
+                        response = DispatcherProtocol.BuildCatalogue();
                     }
                     else
                     {
-                        Console.WriteLine("Aucun gestionnaire de message défini.");
+                        // TODO: Voir si le client est connecté
+                        var activeClient = _activeClients.FirstOrDefault(c => c.TcpClient == tcpClient);
+
+                        if (activeClient == null)
+                        {
+                            response = DispatcherProtocol.BuildLoginError();
+                        }
+                        else
+                        {
+                            var taskItem = _messageAnalyser.AnalyseMessage(message, activeClient);
+
+                            if (taskItem != null && OnTaskReceived != null)
+                            {
+                                response = await OnTaskReceived.Invoke(taskItem);
+                                await SendResponseAsync(sslStream, response);
+                            }
+                        }
                     }
+                    
+                    // Renvoyer la réponse au client
+                    await SendResponseAsync(sslStream, response);
                 }
             }
             catch (Exception ex)
