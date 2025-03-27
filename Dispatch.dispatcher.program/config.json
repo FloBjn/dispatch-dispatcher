@@ -16,7 +16,13 @@
       },
       "files": [
         {
-          "FileName": "9a1b3c5d... (SHA3-384 du nom du fichier)",
+          "nomfichier": "fichier01.txt",
+          "taille": 20,
+          "containers": ["container_1"]
+        },
+        {
+          "nomfichier": "fichier02.txt",
+          "taille": 30,
           "containers": ["container_1"]
         }
       ]
