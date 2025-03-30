@@ -78,9 +78,20 @@ namespace Dispatch.dispatcher.model
             return $"PURGE {filename}\r\n";
         }
 
-        public static string BuildCatalogue()
+        public static string BuildCatalogue(string[] fileName, int[] size)
         {
-            return "CATALOGUE\r\n";
+            if (fileName.Length != size.Length)
+                throw new ArgumentException("Tout les fichiers doivent avoir une taille associée.");
+            
+            var fileInfos = fileName
+                .Select((name, i) =>
+                {
+                    if (!IsValid(name, Filename) || !IsValid(size[i].ToString(), Size))
+                        throw new ArgumentException("Format invalide pour CATALOGUE.");
+                    return $"({name}#{size[i]})";
+                });
+            
+            return $"INVENTORY {string.Join(" ", fileInfos)}\r\n";
         }
 
         public static string BuildAlive(string domain, int port)

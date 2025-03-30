@@ -5,13 +5,15 @@ public class TaskItem(
     string fileName,
     string command,
     string userName,
-    IList<string> containerId)
+    IList<string> containerId,
+    IList<StoredFile> catalogFiles)
 {
     public enum TaskType
     {
         Send,
         Receive,
-        Delete
+        Delete,
+        Catalog
     }
 
     public enum TaskStatus
@@ -32,7 +34,7 @@ public class TaskItem(
     public string FileName { get; set; } = fileName;
 
     /// <summary>
-    /// Commande associée à la tâche (disp_post, disp_delete, disp_get).
+    /// Commande associée à la tâche (disp_post, disp_delete, disp_get, disp_catalogueresult).
     /// </summary>
     public string Command { get; set; } = command;
 
@@ -51,5 +53,8 @@ public class TaskItem(
     /// </summary>
     public TaskStatus Status { get; set; } = TaskStatus.InProgress;
     
-    
+    /// <summary>
+    /// Liste de fichiers à afficher pour le catalogue.
+    /// </summary>
+    public IList<StoredFile> CatalogFiles { get; set; } = catalogFiles;
 }

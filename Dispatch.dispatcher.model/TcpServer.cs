@@ -100,10 +100,19 @@ public class TcpServer
                             _activeClients.Add(client);
                         }
                     }
-                    else if (DispatcherProtocol.ParseCatalogue(message) == "")
+                    else if (DispatcherProtocol.ParseCatalogue(message) != null)
                     {
                         // TODO: Gérer le catalogue
-                        response = DispatcherProtocol.BuildCatalogue();
+                        var activeClient = _activeClients.FirstOrDefault(c => c.TcpClient == tcpClient);
+                            
+                        var taskItem = _messageAnalyser.AnalyseMessage(message, activeClient);
+
+                        var storedFiles = taskItem.CatalogFiles;
+
+                        string[] filesNames = storedFiles.Select(o => o.FileName).ToArray();
+                        int[] filesSize = storedFiles.Select(o => o.Size).ToArray();
+
+                        response = DispatcherProtocol.BuildCatalogue(filesNames, filesSize);
                     }
                     else
                     {

@@ -14,7 +14,6 @@ public class FileCatalogManager : IFileCatalogManager
     {
         _config = config;
     }
-    
 
     public List<StoredFile> LoadCatalog(string connectedUser)
     {
