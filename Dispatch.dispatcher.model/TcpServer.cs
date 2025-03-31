@@ -20,6 +20,8 @@ public class TcpServer
     public event Func<string, string, Task<string>> OnLoginReceived;
     
     public event Func<string, string, Task<string>> OnRegisterReceived;
+    
+    public event Func<string, Task<string>> OnCatalogReceived;
 
     public TcpServer(Config config, ClientMessageAnalyser messageAnalyser)
     {
@@ -87,6 +89,8 @@ public class TcpServer
                         {
                             // TODO: Retenir le client connecté
                             var client = new Client(tcpClient, username, false);
+                            
+                            _activeClients.Add(client);
                         }
                         
                     } else if (DispatcherProtocol.ParseRegister(message) is (string newUser, string newPassword))
@@ -103,16 +107,16 @@ public class TcpServer
                     else if (DispatcherProtocol.ParseCatalogue(message) != null)
                     {
                         // TODO: Gérer le catalogue
-                        var activeClient = _activeClients.FirstOrDefault(c => c.TcpClient == tcpClient);
+                        var activeClient = _activeClients.Find(c => c.TcpClient == tcpClient);
+
+                        if (activeClient != null)
+                        {
+                            response = await OnCatalogReceived.Invoke(activeClient.Username);
+                        }
+                        else
+                        {
                             
-                        var taskItem = _messageAnalyser.AnalyseMessage(message, activeClient);
-
-                        var storedFiles = taskItem.CatalogFiles;
-
-                        string[] filesNames = storedFiles.Select(o => o.FileName).ToArray();
-                        int[] filesSize = storedFiles.Select(o => o.Size).ToArray();
-
-                        response = DispatcherProtocol.BuildCatalogue(filesNames, filesSize);
+                        }
                     }
                     else
                     {
