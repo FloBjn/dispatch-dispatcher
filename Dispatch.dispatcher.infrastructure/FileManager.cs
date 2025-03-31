@@ -56,33 +56,11 @@ public class FileManager : IFileManager
 
 
 
-    public void Encrypte(OurFile ourFile, string content)
+    public void Encrypte(OurFile ourFile, byte[] content)
     {
-        //TODO Cohérent avec SOLID?
-        Console.WriteLine("Cryptage... ");
-        _encryptor.Encrypte(ourFile, content);
+        Console.WriteLine("🔐 Cryptage...");
+        _encryptor.Encrypte(ourFile, content); // CHANGÉ ici
     }
-    /*
-    public void SendFile(OurFile ourFile)
-    {
-        Console.WriteLine("📡 Envoi du fichier à tous les Containers actifs...");
-
-        var activeContainers = _containerManager.GetActiveContainers();
-        if (activeContainers.Count == 0)
-        {
-            throw new Exception("🚨 Aucun Container actif trouvé !");
-        }
-
-        var hashedFile = _hasher.HashFile(ourFile);
-        var content = Encoding.UTF8.GetString(ourFile.Content);
-
-        string message = $"POST {hashedFile.hashFileName} {ourFile.FileSize} {hashedFile.hashFileContent}\n{content}";
-
-        _tcpContainer.SendMessageToAllAsync(message).Wait(); // Bloque jusqu'à la fin de l'exécution
-
-        Console.WriteLine("✅ Fichier envoyé à tous les Containers !");
-    }
-    */
 
 
     /// <summary>

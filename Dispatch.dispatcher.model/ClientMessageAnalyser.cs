@@ -22,87 +22,91 @@ public class ClientMessageAnalyser
     /// <summary>
     /// Analyse un message et retourne un TaskItem si applicable.
     /// </summary>
-    public TaskItem? AnalyseMessage(string message, Client activeClient)
+    public TaskItem? AnalyseMessage(byte[] buffer, int bytesRead, Client activeClient)
+{
+    // Étape 1 : Réception du contenu binaire (UPLOAD)
+    if (activeClient is { CurrentFile: not null, AwaitingUploadContent: true })
     {
-        // Étape 1 : Si le client attend un contenu de fichier, on traite ce contenu
-        if (activeClient is { CurrentFile: not null, AwaitingUploadContent: true } )
-        {            
-            Console.WriteLine("📥 Contenu de fichier reçu, traitement en cours...");
-            
-            int numberContentMessages = activeClient.CurrentFile.FileSize / 1024;
-            _fileManager.Encrypte(activeClient.CurrentFile, message);
+        Console.WriteLine("Contenu de fichier reçu, traitement en cours...");
 
+        activeClient.CurrentFile.AppendChunk(buffer, bytesRead);
+
+        if (activeClient.CurrentFile.IsComplete())
+        {
             var fileHasher = new FileHasher();
             var (hashFileName, hashFileContent) = fileHasher.HashFile(activeClient.CurrentFile);
+
             activeClient.CurrentFile.HashFileName = hashFileName;
             activeClient.CurrentFile.HashFileContent = hashFileContent;
 
-            string command = DispatcherProtocol.BuildPost(
-                activeClient.CurrentFile.HashFileName,
-                activeClient.CurrentFile.HashFileContent.Length,
-                activeClient.CurrentFile.HashFileContent
-            ) + "\r\n" + activeClient.CurrentFile.Content;
+            _fileManager.Encrypte(activeClient.CurrentFile, activeClient.CurrentFile.Content);
+
+            string commandHeader = DispatcherProtocol.BuildPost(
+                hashFileName,
+                activeClient.CurrentFile.EncryptedContent.Length,
+                hashFileContent
+            );
+
 
             var task = new TaskItem(
                 TaskItem.TaskType.Send,
                 activeClient.CurrentFile.FileName,
-                command,
+                commandHeader,
                 activeClient.Username,
-                new List<string> { "C1" }, // TODO: Ajouter les containers approprié
+                new List<string> { "C1" },
                 new List<StoredFile>()
-            );
-
-            if (activeClient.CurrentFile.CurrentContentNumber == numberContentMessages)
-            {
-                activeClient.AwaitingUploadContent = false;
-                activeClient.CurrentFile = null;
-                return task;
-            }
-
-            return null;
-        }
-
-        // Étape 2 : Détection d'une requête d'upload (en 2 temps)
-        if (DispatcherProtocol.ParseUpload(message) is (string fileName, int fileSize))
-        {
-            var fullUser = _userManager.GetUserByUsername(activeClient.Username);
-            if (fullUser == null)
-                throw new Exception("Utilisateur inconnu");
-
-            activeClient.CurrentFile = new OurFile
-            {
-                FileName = fileName,
-                FileSize = fileSize,
-                User = fullUser
+            ){
+                BinaryPayload = activeClient.CurrentFile.EncryptedContent
             };
 
-            activeClient.AwaitingUploadContent = true;
+            activeClient.AwaitingUploadContent = false;
+            activeClient.CurrentFile = null;
 
-            Console.WriteLine($"📝 Requête d'UPLOAD reçue pour {fileName} ({fileSize} octets). En attente de contenu...");
-
-            return null;
+            return task;
         }
 
-        // Étape 3 : Download
-        if (DispatcherProtocol.ParseDownload(message) is string downloadFile)
-        {
-            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, "GET", activeClient.Username, new List<string>(), new List<StoredFile>());
-        }
-
-        // Étape 4 : Purge
-        if (DispatcherProtocol.ParsePurge(message) is string purgeFile)
-        {
-            return new TaskItem(TaskItem.TaskType.Delete, purgeFile, "DELETE", activeClient.Username, new List<string>(), new List<StoredFile>());
-        }
-        
-        // Catalogue
-        if (DispatcherProtocol.ParseCatalogue(message) != null)
-        {
-            var storedFiles = _fileCatalogManager.LoadCatalog(activeClient.Username);
-            
-            return new TaskItem(TaskItem.TaskType.Catalog, "", "INVENTORY" ,activeClient.Username, new List<string>(), storedFiles);
-        }
-
-        throw new NotImplementedException("Commande non reconnue ou non implémentée : " + message);
+        return null;
     }
+
+    // Étape 2 : Si ce n’est pas du contenu de fichier, traiter comme texte
+    var message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+    if (DispatcherProtocol.ParseUpload(message) is (string fileName, int fileSize))
+    {
+        var fullUser = _userManager.GetUserByUsername(activeClient.Username);
+        if (fullUser == null)
+            throw new Exception("Utilisateur inconnu");
+
+        activeClient.CurrentFile = new OurFile
+        {
+            FileName = fileName,
+            FileSize = fileSize,
+            User = fullUser
+        };
+
+        activeClient.AwaitingUploadContent = true;
+
+        Console.WriteLine($"📝 Requête d'UPLOAD reçue pour {fileName} ({fileSize} octets). En attente de contenu...");
+        return null;
+    }
+
+    if (DispatcherProtocol.ParseDownload(message) is string downloadFile)
+    {
+        return new TaskItem(TaskItem.TaskType.Receive, downloadFile, "GET", activeClient.Username, new List<string>(), new List<StoredFile>());
+    }
+
+    if (DispatcherProtocol.ParsePurge(message) is string purgeFile)
+    {
+        return new TaskItem(TaskItem.TaskType.Delete, purgeFile, "DELETE", activeClient.Username, new List<string>(), new List<StoredFile>());
+    }
+
+    if (DispatcherProtocol.ParseCatalogue(message) != null)
+    {
+        var storedFiles = _fileCatalogManager.LoadCatalog(activeClient.Username);
+        return new TaskItem(TaskItem.TaskType.Catalog, "", "INVENTORY", activeClient.Username, new List<string>(), storedFiles);
+    }
+
+    throw new NotImplementedException("Commande non reconnue ou non implémentée : " + message);
+}
+
 }

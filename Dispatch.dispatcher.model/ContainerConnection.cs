@@ -1,50 +1,59 @@
 ﻿using System.Collections.Concurrent;
 using Dispatch.disapatcher.model;
 
-namespace Dispatch.dispatcher.model;
-
-public class ContainerConnection
+namespace Dispatch.dispatcher.model
 {
-    private readonly string _name;
-    private readonly string _ip;
-    private readonly int _port;
-    private readonly BlockingCollection<string> _messageQueue = new();
-    private readonly Thread _thread;
-
-    public ContainerConnection(string name, string ip, int port)
+    public class ContainerConnection
     {
-        _name = name;
-        _ip = ip;
-        _port = port;
+        private readonly string _name;
+        private readonly string _ip;
+        private readonly int _port;
+        private readonly BlockingCollection<TaskItem> _taskQueue = new();
+        private readonly Thread _thread;
 
-        _thread = new Thread(ProcessMessages)
+        public ContainerConnection(string name, string ip, int port)
         {
-            IsBackground = true
-        };
-        _thread.Start();
-    }
+            _name = name;
+            _ip = ip;
+            _port = port;
 
-    public void EnqueueMessage(string message)
-    {
-        _messageQueue.Add(message);
-    }
+            _thread = new Thread(ProcessTasks)
+            {
+                IsBackground = true
+            };
+            _thread.Start();
+        }
 
-    private void ProcessMessages()
-    {
-        var connection = new UnicastConnection();
-
-        foreach (var message in _messageQueue.GetConsumingEnumerable())
+        public void EnqueueTask(TaskItem task)
         {
-            try
+            _taskQueue.Add(task);
+        }
+
+        private void ProcessTasks()
+        {
+            var connection = new UnicastConnection();
+
+            foreach (var task in _taskQueue.GetConsumingEnumerable())
             {
-                connection.Connect(_ip, _port);
-                connection.SendMessage(message);
-                connection.Disconnect();
-                Console.WriteLine($"Message envoyé à {_name}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erreur d'envoi vers {_name} : {ex.Message}");
+                try
+                {
+                    connection.Connect(_ip, _port);
+
+                    byte[] header = System.Text.Encoding.UTF8.GetBytes(task.Command + "\r\n");
+                    connection.SendBytes(header);
+
+                    if (task.BinaryPayload.Length > 0)
+                    {
+                        connection.SendBytes(task.BinaryPayload);
+                    }
+
+                    connection.Disconnect();
+                    Console.WriteLine($"\u2705 Message binaire envoyé à {_name}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"\u26a0\ufe0f Erreur d'envoi vers {_name} : {ex.Message}");
+                }
             }
         }
     }

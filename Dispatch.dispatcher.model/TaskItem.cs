@@ -52,9 +52,14 @@ public class TaskItem(
     /// Statut actuel de la tâche (en cours, terminée, erreur).
     /// </summary>
     public TaskStatus Status { get; set; } = TaskStatus.InProgress;
-    
+
     /// <summary>
     /// Liste de fichiers à afficher pour le catalogue.
     /// </summary>
     public IList<StoredFile> CatalogFiles { get; set; } = catalogFiles;
+
+    /// <summary>
+    /// Contenu binaire du fichier (chiffré), à transmettre.
+    /// </summary>
+    public byte[] BinaryPayload { get; set; } = Array.Empty<byte>();
 }
