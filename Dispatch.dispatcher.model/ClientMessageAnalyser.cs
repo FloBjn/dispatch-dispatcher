@@ -10,13 +10,11 @@ public class ClientMessageAnalyser
 {
     private readonly IUserManager _userManager;
     private readonly IFileManager _fileManager;
-    private readonly IFileCatalogManager _fileCatalogManager;
 
-    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager, IFileCatalogManager fileCatalogManager)
+    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager)
     {
         _userManager = userManager;
         _fileManager = fileManager;
-        _fileCatalogManager = fileCatalogManager;
     }
 
     /// <summary>
@@ -46,8 +44,7 @@ public class ClientMessageAnalyser
                 activeClient.CurrentFile.FileName,
                 command,
                 activeClient.Username,
-                new List<string> { "C1" }, // TODO: Ajouter les containers approprié
-                new List<StoredFile>()
+                new List<string> { "C1" } // TODO: Ajouter les containers approprié
             );
 
             if (activeClient.CurrentFile.CurrentContentNumber == numberContentMessages)
@@ -83,21 +80,13 @@ public class ClientMessageAnalyser
         // Étape 3 : Download
         if (DispatcherProtocol.ParseDownload(message) is string downloadFile)
         {
-            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, "GET", activeClient.Username, new List<string>(), new List<StoredFile>());
+            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, "GET", activeClient.Username, new List<string>());
         }
 
         // Étape 4 : Purge
         if (DispatcherProtocol.ParsePurge(message) is string purgeFile)
         {
-            return new TaskItem(TaskItem.TaskType.Delete, purgeFile, "DELETE", activeClient.Username, new List<string>(), new List<StoredFile>());
-        }
-        
-        // Catalogue
-        if (DispatcherProtocol.ParseCatalogue(message) != null)
-        {
-            var storedFiles = _fileCatalogManager.LoadCatalog(activeClient.Username);
-            
-            return new TaskItem(TaskItem.TaskType.Catalog, "", "INVENTORY" ,activeClient.Username, new List<string>(), storedFiles);
+            return new TaskItem(TaskItem.TaskType.Delete, purgeFile, "DELETE", activeClient.Username, new List<string>());
         }
 
         throw new NotImplementedException("Commande non reconnue ou non implémentée : " + message);

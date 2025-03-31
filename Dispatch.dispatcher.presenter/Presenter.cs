@@ -10,22 +10,26 @@ public class Presenter
     private readonly MulticastListener _multicastListener;
     private readonly IUserManager _userManager;
     private readonly TaskManager _taskManager;
+    private readonly IFileCatalogManager _fileCatalogManager;
 
     public Presenter(IMainView view, TcpServer unicastServer,
-        MulticastListener multicastListener, IUserManager userManager, TaskManager taskManager)
+        MulticastListener multicastListener, IUserManager userManager, TaskManager taskManager, IFileCatalogManager fileCatalogManager)
     {
         _view = view;
         _unicastServer = unicastServer;
         _multicastListener = multicastListener;
         _userManager = userManager;
         _taskManager = taskManager;
+        _fileCatalogManager = fileCatalogManager;
 
         _multicastListener.OnMessageContainerReceived += ShowMessageContainer;
         _unicastServer.OnTaskReceived += AnalyseTaskClient;
         _unicastServer.OnLoginReceived += LoginClient;
         _unicastServer.OnRegisterReceived += RegisterClient;
+        _unicastServer.OnCatalogReceived += CatalogClient;
     }
-    
+
+
     /// <summary>
     /// Démarre le serveur unicast
     /// </summary>
@@ -34,7 +38,7 @@ public class Presenter
         _taskManager.Start(token);
         await _unicastServer.StartAsync();
     }
-    
+
     private Task<string> RegisterClient(string userName, string password)
     {
         if (_userManager.VerifyUser(userName, password) != null)
@@ -42,14 +46,30 @@ public class Presenter
             return Task.FromResult(DispatcherProtocol.BuildLoginError());
         }
 
-        _userManager.AddUser(new User {Username = userName, PasswordHash = password, AesKey = AesKeyGenerator.GenerateAesKey()});
+        _userManager.AddUser(new User
+            { Username = userName, PasswordHash = password, AesKey = AesKeyGenerator.GenerateAesKey() });
         return Task.FromResult(DispatcherProtocol.BuildLoginOk());
     }
 
     private Task<string> LoginClient(string userName, string password)
     {
         var user = _userManager.VerifyUser(userName, password);
-        return user != null ? Task.FromResult(DispatcherProtocol.BuildLoginOk()) : Task.FromResult(DispatcherProtocol.BuildLoginError());
+        return user != null
+            ? Task.FromResult(DispatcherProtocol.BuildLoginOk())
+            : Task.FromResult(DispatcherProtocol.BuildLoginError());
+    }
+
+    private Task<string> CatalogClient(string currentUser)
+    {
+        var catalog = _fileCatalogManager.LoadCatalog(currentUser);
+        Console.WriteLine("Catalogue lu.");
+        
+        var filesNames = catalog.Select(o => o.FileName).ToArray();
+        var filesSize = catalog.Select(o => o.Size).ToArray();
+        
+        Console.WriteLine(filesNames.ToString());
+        
+        return Task.FromResult(DispatcherProtocol.BuildCatalogue(filesNames, filesSize));
     }
 
     private Task<string> AnalyseTaskClient(TaskItem task)
@@ -59,7 +79,8 @@ public class Presenter
         _view.DisplayMainThreadMessage($"Tâche ajoutée à la file : {task.Type} - {task.FileName}");
         return Task.FromResult("TASK_RECEIVED");
     }
-    
+
+
     /// <summary>
     /// Montre le message reçu dans le container
     /// </summary>

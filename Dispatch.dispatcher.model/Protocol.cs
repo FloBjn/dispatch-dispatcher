@@ -88,7 +88,7 @@ namespace Dispatch.dispatcher.model
                 {
                     if (!IsValid(name, Filename) || !IsValid(size[i].ToString(), Size))
                         throw new ArgumentException("Format invalide pour CATALOGUE.");
-                    return $"({name}#{size[i]})";
+                    return $"{name}#{size[i]}";
                 });
             
             return $"INVENTORY {string.Join(" ", fileInfos)}\r\n";

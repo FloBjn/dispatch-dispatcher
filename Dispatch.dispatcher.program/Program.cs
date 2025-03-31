@@ -40,7 +40,7 @@ public class Program
         IFileCatalogManager fileCatalogManager = new FileCatalogManager(config);
         
         // Gestion des utilisateurs
-        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager, fileCatalogManager);
+        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
         
         // Gestion des tasks
         TaskDispatcher dispatcher = new TaskDispatcher(fileManager, new FileSender(tcpContainer));
@@ -53,11 +53,10 @@ public class Program
         
         multicastListener.StartListening();
         
-         
         
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server, multicastListener, new UserManager(config), taskManager);
+        var presenter = new Presenter(view, server, multicastListener, new UserManager(config), taskManager, fileCatalogManager);
         var cts = new CancellationTokenSource();
 
         // Démarrage du programme
