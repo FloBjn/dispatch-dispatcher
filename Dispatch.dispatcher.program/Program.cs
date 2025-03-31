@@ -1,5 +1,4 @@
 using System.Net.NetworkInformation;
-using Dispatch.disapatcher.model;
 using Dispatch.dispatcher.model;
 using Dispatch.dispatcher.infrastructure;
 using Dispatch.dispatcher.presenter;
@@ -34,7 +33,7 @@ public class Program
         var tcpContainer = new TcpContainer();
         
         // Gestion des fichiers 
-        IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer, new FileHasher(), containerManager);
+        IFileManager fileManager = new FileManager(new FileEncryptor(), new FileHasher(), containerManager);
         
         // Gestion du catalogue
         IFileCatalogManager fileCatalogManager = new FileCatalogManager(config);

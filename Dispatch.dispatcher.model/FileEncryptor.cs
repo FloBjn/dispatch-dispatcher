@@ -1,38 +1,34 @@
 ﻿using System.Security.Cryptography;
-using System.Text;
 
 namespace Dispatch.dispatcher.model;
 
 public class FileEncryptor
 {
-    public void Encrypte(OurFile ourFile, string content) 
+    public void Encrypte(OurFile ourFile, byte[] content)
     {
-        var aes = Convert.FromBase64String(ourFile.User.AesKey);
+        var aesKey = Convert.FromBase64String(ourFile.User.AesKey);
+        (ourFile.EncryptedContent, ourFile.Tag) = EncryptAesgcm(content, aesKey, ourFile.Iv, ourFile.Aad);
+    }
+
+    private (byte[] encryptedText, byte[] tag) EncryptAesgcm(byte[] plaintext, byte[] aesKey, byte[] iv, byte[] aad)
+    {
+        using var aesGcm = new AesGcm(aesKey);
         
-        (ourFile.Content, ourFile.Tag) = EncryptAesgcm(content, aes, ourFile.Iv, ourFile.Aad);
-    }
-    
-    private (byte[] encryptedText, byte[] tag) EncryptAesgcm(string text, byte[] aesKey, byte[] iv, byte[] aad)
-    {
-        using (AesGcm aesGcm = new AesGcm(aesKey, 16))
-        {
-            byte[] textBytes = Encoding.UTF8.GetBytes(text);
-            byte[] encryptedText = new byte[textBytes.Length];
-            byte[] tag = new byte[16]; // 128 bits
+        byte[] encryptedText = new byte[plaintext.Length];
+        byte[] tag = new byte[16]; // 128 bits
 
-            aesGcm.Encrypt(iv, textBytes, encryptedText, tag, aad);
-            return (encryptedText, tag);
-        }
-    }
-    
-    private string DecryptAesgcm(byte[] encryptedText, byte[] tag, byte[] aesKey, byte[] iv, byte[] aad)
-    {
-        using (AesGcm aesGcm = new AesGcm(aesKey))
-        {
-            byte[] decryptedBytes = new byte[encryptedText.Length];
+        aesGcm.Encrypt(iv, plaintext, encryptedText, tag, aad);
 
-            aesGcm.Decrypt(iv, encryptedText, tag, decryptedBytes, aad);
-            return Encoding.UTF8.GetString(decryptedBytes);
-        }
+        return (encryptedText, tag);
+    }
+
+    public string DecryptAesgcm(byte[] encryptedText, byte[] tag, byte[] aesKey, byte[] iv, byte[] aad)
+    {
+        using var aesGcm = new AesGcm(aesKey);
+        
+        byte[] decryptedBytes = new byte[encryptedText.Length];
+        aesGcm.Decrypt(iv, encryptedText, tag, decryptedBytes, aad);
+        
+        return System.Text.Encoding.UTF8.GetString(decryptedBytes);
     }
 }

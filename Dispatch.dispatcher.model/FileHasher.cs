@@ -10,10 +10,10 @@ public class FileHasher
         Console.WriteLine("Hashage du fichier en cours ...");
 
         string hashFileName = ComputeSha384Hex(Encoding.UTF8.GetBytes(file.FileName));
-        string hashFileContent = ComputeSha384Hex(file.Content);
+        string hashFileContent = ComputeSha384Hex(file.EncryptedContent);
 
-        Console.WriteLine($"⸮ hashFilename = {hashFileName}");
-        Console.WriteLine($"⸮ hashFileContent = {hashFileContent}");
+        Console.WriteLine($"hashFilename = {hashFileName}");
+        Console.WriteLine($"hashFileContent = {hashFileContent}");
 
         return (hashFileName, hashFileContent);
     }
