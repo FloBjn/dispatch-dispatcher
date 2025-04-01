@@ -14,6 +14,8 @@ public class TcpServer
     private bool _isRunning;
     private readonly ClientMessageAnalyser _messageAnalyser;
     private readonly List<Client> _activeClients = new();
+    
+    private readonly Protocol _protocol = Protocol.GetInstance();
 
     public event Func<TaskItem, Task<string>>? OnTaskReceived;
 
@@ -72,25 +74,25 @@ public class TcpServer
                     string response = "";
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                    if (DispatcherProtocol.ParseLogin(message) is (string username, string password))
+                    if (_protocol.ParseLogin(message) is (string username, string password))
                     {
                         response = await OnLoginReceived.Invoke(username, password);
-                        if (response == DispatcherProtocol.BuildLoginOk())
+                        if (response == _protocol.BuildLoginOk())
                         {
                             var client = new Client(tcpClient, username, false);
                             _activeClients.Add(client);
                         }
                     }
-                    else if (DispatcherProtocol.ParseRegister(message) is (string newUser, string newPassword))
+                    else if (_protocol.ParseRegister(message) is (string newUser, string newPassword))
                     {
                         response = await OnRegisterReceived.Invoke(newUser, newPassword);
-                        if (response == DispatcherProtocol.BuildLoginOk())
+                        if (response == _protocol.BuildLoginOk())
                         {
                             var client = new Client(tcpClient, newUser, false);
                             _activeClients.Add(client);
                         }
                     }
-                    else if (DispatcherProtocol.ParseCatalogue(message) != null)
+                    else if (_protocol.ParseCatalogue(message) != null)
                     {
                         var activeClient = _activeClients.Find(c => c.TcpClient == tcpClient);
                         if (activeClient != null && OnCatalogReceived != null)
@@ -103,7 +105,7 @@ public class TcpServer
                         var activeClient = _activeClients.FirstOrDefault(c => c.TcpClient == tcpClient);
                         if (activeClient == null)
                         {
-                            response = DispatcherProtocol.BuildLoginError();
+                            response = _protocol.BuildLoginError();
                         }
                         else
                         {

@@ -4,6 +4,9 @@ public class TaskDispatcher : ITaskDispatcher
 {
     private readonly IFileManager _fileManager;
     private readonly FileSender _fileSender;
+    
+    private readonly Protocol _protocol = Protocol.GetInstance();
+    
     public TaskDispatcher(IFileManager fileManager, FileSender fileSender)
     {
         _fileManager = fileManager;
@@ -52,7 +55,6 @@ public class TaskDispatcher : ITaskDispatcher
             task.CompletionSource?.SetResult("ERROR: " + ex.Message);
         }
     }
-
 
 
     private string HandleUpload(TaskItem task)
