@@ -64,12 +64,9 @@ public class Presenter
     private Task<string> CatalogClient(string currentUser)
     {
         var catalog = _fileCatalogManager.LoadCatalog(currentUser);
-        Console.WriteLine("Catalogue lu.");
         
         var filesNames = catalog.Select(o => o.FileName).ToArray();
         var filesSize = catalog.Select(o => o.Size).ToArray();
-        
-        Console.WriteLine(filesNames.ToString());
         
         return Task.FromResult(_protocol.BuildCatalogue(filesNames, filesSize));
     }
