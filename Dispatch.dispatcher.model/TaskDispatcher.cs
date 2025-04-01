@@ -24,12 +24,12 @@ public class TaskDispatcher : ITaskDispatcher
                     if (result == "POST_OK")
                     {
                         task.Status = TaskItem.TaskStatus.Completed;
-                        task.CompletionSource?.SetResult(DispatcherProtocol.BuildSendOk());
+                        task.CompletionSource?.SetResult(_protocol.BuildSendOk());
                     }
                     else
                     {
                         task.Status = TaskItem.TaskStatus.Error;
-                        task.CompletionSource?.SetResult(DispatcherProtocol.BuildSendError());
+                        task.CompletionSource?.SetResult(_protocol.BuildSendError());
                     }
                     break;
 
@@ -67,6 +67,8 @@ public class TaskDispatcher : ITaskDispatcher
     private void HandleDownload(TaskItem task)
     {
         // TODO : Interroger le container pour récupérer le fichier
+        _fileSender.SendTaskAt(task.ContainerId, task);
+        throw new NotImplementedException();
     }
 
     private void HandleDelete(TaskItem task)

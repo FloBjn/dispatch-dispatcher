@@ -23,5 +23,16 @@
                 _connections[name] = new ContainerConnection(name, ip, port);
             }
         }
+
+        public void SendTaskAt(IList<string> containerIds, TaskItem task)
+        {
+            foreach (var id in containerIds)
+            {
+                if (_connections.TryGetValue(id, out var connection))
+                {
+                    connection.EnqueueTask(task);
+                }
+            }
+        }
     }
 }

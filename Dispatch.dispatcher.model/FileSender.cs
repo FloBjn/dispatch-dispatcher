@@ -28,5 +28,10 @@
             return task.Result;
         }
 
+        public void SendTaskAt(IList<string> containerIds, TaskItem task)
+        {
+            _tcpContainer.SendTaskAt(containerIds, task);
+        }
+
     }
 }
