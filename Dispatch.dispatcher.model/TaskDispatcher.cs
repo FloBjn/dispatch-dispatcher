@@ -12,6 +12,7 @@ public class TaskDispatcher : ITaskDispatcher
 
     public string Dispatch(TaskItem task)
     {
+        
         try
         {
             string result = task.Type switch
