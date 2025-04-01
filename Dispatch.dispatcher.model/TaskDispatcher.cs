@@ -10,55 +10,52 @@ public class TaskDispatcher : ITaskDispatcher
         _fileSender = fileSender;
     }
 
-    public void Dispatch(TaskItem task)
+    public string Dispatch(TaskItem task)
     {
         try
         {
-            switch (task.Type)
+            string result = task.Type switch
             {
-                case TaskItem.TaskType.Send:
-                    HandleUpload(task);
-                    break;
+                TaskItem.TaskType.Send => HandleUpload(task) == "POST_OK"
+                    ? DispatcherProtocol.BuildSendOk()
+                    : DispatcherProtocol.BuildSendError(),
 
-                case TaskItem.TaskType.Receive:
-                    HandleDownload(task);
-                    break;
+                TaskItem.TaskType.Receive => "", //TODO 
+                TaskItem.TaskType.Delete => "",  //TODO 
 
-                case TaskItem.TaskType.Delete:
-                    HandleDelete(task);
-                    break;
-
-                default:
-                    Console.WriteLine($"[Dispatcher] Type de tâche non reconnu : {task.Type}");
-                    break;
-            }
+                _ => ""
+            };
 
             task.Status = TaskItem.TaskStatus.Completed;
-            Console.WriteLine($"[Dispatcher] Tâche {task.Type} terminée avec succès !");
+
+            task.CompletionSource?.SetResult(result);
+
+            return result;
         }
         catch (Exception ex)
         {
             task.Status = TaskItem.TaskStatus.Error;
-            Console.WriteLine($"[Dispatcher] Erreur pendant la tâche : {ex.Message}");
+
+            task.CompletionSource?.SetResult("ERROR"); 
+            return "";
         }
     }
 
-    private void HandleUpload(TaskItem task)
+
+    private string HandleUpload(TaskItem task)
     {
-        Console.WriteLine($"[Dispatcher] Upload : Envoi vers Container...");
-        _fileSender.SendFile(task);
+        string response = _fileSender.SendFile(task);
         _fileManager.SaveFile(task);
+        return response;
     }
 
     private void HandleDownload(TaskItem task)
     {
-        Console.WriteLine($"[Dispatcher] Download : TODO - à implémenter.");
         // TODO : Interroger le container pour récupérer le fichier
     }
 
     private void HandleDelete(TaskItem task)
     {
-        Console.WriteLine($"[Dispatcher] Delete : TODO - à implémenter.");
         // TODO : Envoyer une commande DELETE au container
     }
 }

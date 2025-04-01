@@ -45,9 +45,11 @@ namespace Dispatch.dispatcher.model
                     {
                         connection.SendBytes(task.BinaryPayload);
                     }
-
+                    
+                    string response = connection.ReadLine();
+                    task.Result = response.Trim(); 
+                    
                     connection.Disconnect();
-                    Console.WriteLine($"\u2705 Message binaire envoyé à {_name}");
                 }
                 catch (Exception ex)
                 {
