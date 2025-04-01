@@ -2,8 +2,10 @@
 
 namespace Dispatch.dispatcher.model
 {
-    public static class DispatcherProtocol
+    public class Protocol
     {
+        private static Protocol? _instance;
+        
         // Définition des regex basées sur l'ABNF
         private const string Letter = "[A-Za-z]";
         private const string Digit = "[0-9]";
@@ -36,8 +38,13 @@ namespace Dispatch.dispatcher.model
         private static readonly Regex DeleteRegex = new Regex($"^DELETE{Esp}{HashFilename}{Eol}$");
         private static readonly Regex GetRegex = new Regex($"^GET{Esp}{HashFilename}{Eol}$");
 
+        public static Protocol GetInstance()
+        {
+            return _instance ??= new Protocol();
+        }
+        
         // Méthodes de génération des messages
-        public static string BuildLogin(string username, string password)
+        public string BuildLogin(string username, string password)
         {
             if (!IsValid(username, Username) || !IsValid(password, Password))
                 throw new ArgumentException("Format invalide pour LOGIN.");
@@ -45,7 +52,7 @@ namespace Dispatch.dispatcher.model
             return $"LOGIN {username} {password}\r\n";
         }
 
-        public static string BuildRegister(string username, string password)
+        public string BuildRegister(string username, string password)
         {
             if (!IsValid(username, Username) || !IsValid(password, Password))
                 throw new ArgumentException("Format invalide pour REGISTER.");
@@ -53,7 +60,7 @@ namespace Dispatch.dispatcher.model
             return $"REGISTER {username} {password}\r\n";
         }
 
-        public static string BuildUpload(string filename, int size)
+        public string BuildUpload(string filename, int size)
         {
             if (!IsValid(filename, Filename) || !IsValid(size.ToString(), Size))
                 throw new ArgumentException("Format invalide pour UPLOAD.");
@@ -61,7 +68,7 @@ namespace Dispatch.dispatcher.model
             return $"UPLOAD {filename} {size}\r\n";
         }
 
-        public static string BuildDownload(string filename)
+        public string BuildDownload(string filename)
         {
             if (!IsValid(filename, Filename))
                 throw new ArgumentException("Format invalide pour DOWNLOAD.");
@@ -69,7 +76,7 @@ namespace Dispatch.dispatcher.model
             return $"DOWNLOAD {filename}\r\n";
         }
 
-        public static string BuildPurge(string filename)
+        public string BuildPurge(string filename)
         {
             if (!IsValid(filename, Filename))
                 throw new ArgumentException("Format invalide pour PURGE.");
@@ -77,7 +84,7 @@ namespace Dispatch.dispatcher.model
             return $"PURGE {filename}\r\n";
         }
 
-        public static string BuildCatalogue(string[] fileName, int[] size)
+        public string BuildCatalogue(string[] fileName, int[] size)
         {
             if (fileName.Length != size.Length)
                 throw new ArgumentException("Tout les fichiers doivent avoir une taille associée.");
@@ -93,7 +100,7 @@ namespace Dispatch.dispatcher.model
             return $"INVENTORY {string.Join(" ", fileInfos)}\r\n";
         }
 
-        public static string BuildAlive(string domain, int port)
+        public string BuildAlive(string domain, int port)
         {
             if (!IsValid(domain, Domain) || !IsValid(port.ToString(), Port))
                 throw new ArgumentException("Format invalide pour ALIVE.");
@@ -101,7 +108,7 @@ namespace Dispatch.dispatcher.model
             return $"ALIVE {domain} {port}\r\n";
         }
 
-        public static string BuildPost(string hashFilename, int size, string hashFileContent)
+        public string BuildPost(string hashFilename, int size, string hashFileContent)
         {
             Console.WriteLine($"→ hashFilename = {hashFilename}");
             Console.WriteLine($"→ size = {size}");
@@ -113,7 +120,7 @@ namespace Dispatch.dispatcher.model
             return $"POST {hashFilename} {size} {hashFileContent}\r\n";
         }
 
-        public static string BuildDelete(string hashFilename)
+        public string BuildDelete(string hashFilename)
         {
             if (!IsValid(hashFilename, HashFilename))
                 throw new ArgumentException("Format invalide pour DELETE.");
@@ -121,7 +128,7 @@ namespace Dispatch.dispatcher.model
             return $"DELETE {hashFilename}\r\n";
         }
 
-        public static string BuildGet(string hashFilename)
+        public string BuildGet(string hashFilename)
         {
             if (!IsValid(hashFilename, HashFilename))
                 throw new ArgumentException("Format invalide pour GET.");
@@ -130,49 +137,49 @@ namespace Dispatch.dispatcher.model
         }
 
         // Méthodes de parsing des messages
-        public static (string username, string password)? ParseLogin(string message)
+        public (string username, string password)? ParseLogin(string message)
         {
             Match match = LoginRegex.Match(message);
             return match.Success ? (match.Groups["username"].Value, match.Groups["password"].Value) : null;
         }
 
-        public static (string username, string password)? ParseRegister(string message)
+        public (string username, string password)? ParseRegister(string message)
         {
             Match match = RegisterRegex.Match(message);
             return match.Success ? (match.Groups["username"].Value, match.Groups["password"].Value) : null;
         }
 
-        public static (string filename, int size)? ParseUpload(string message)
+        public (string filename, int size)? ParseUpload(string message)
         {
             Match match = UploadRegex.Match(message);
             return match.Success ? (match.Groups["filename"].Value, int.Parse(match.Groups["size"].Value)) : null;
         }
 
-        public static string? ParseDownload(string message)
+        public string? ParseDownload(string message)
         {
             Match match = DownloadRegex.Match(message);
             return match.Success ? match.Groups["filename"].Value : null;
         }
 
-        public static string? ParsePurge(string message)
+        public string? ParsePurge(string message)
         {
             Match match = PurgeRegex.Match(message);
             return match.Success ? match.Groups["filename"].Value : null;
         }
 
-        public static string? ParseCatalogue(string message)
+        public string? ParseCatalogue(string message)
         {
             Match match = CatalogueRegex.Match(message);
             return match.Success ? match.Groups["catalogue"].Value : null;
         }
 
-        public static (string domain, int port)? ParseAlive(string message)
+        public (string domain, int port)? ParseAlive(string message)
         {
             Match match = AliveRegex.Match(message);
             return match.Success ? (match.Groups["domain"].Value, int.Parse(match.Groups["port"].Value)) : null;
         }
 
-        public static (string hashFilename, int size, string hashFileContent)? ParsePost(string message)
+        public (string hashFilename, int size, string hashFileContent)? ParsePost(string message)
         {
             Match match = PostRegex.Match(message);
             return match.Success
@@ -181,13 +188,13 @@ namespace Dispatch.dispatcher.model
                 : null;
         }
 
-        public static string? ParseDelete(string message)
+        public string? ParseDelete(string message)
         {
             Match match = DeleteRegex.Match(message);
             return match.Success ? match.Groups["hash_filename"].Value : null;
         }
 
-        public static string? ParseGet(string message)
+        public string? ParseGet(string message)
         {
             Match match = GetRegex.Match(message);
             return match.Success ? match.Groups["hash_filename"].Value : null;
@@ -195,22 +202,22 @@ namespace Dispatch.dispatcher.model
 
         private static bool IsValid(string value, string pattern) => Regex.IsMatch(value, $"^{pattern}$");
 
-        public static string BuildLoginError()
+        public string BuildLoginError()
         {
             return "LOGIN_ERROR\r\n";
         }
 
-        public static string BuildLoginOk()
+        public string BuildLoginOk()
         {
             return "LOGIN_OK\r\n";
         }
 
-        public static string BuildSendOk()
+        public string BuildSendOk()
         {
             return "UPLOAD_OK\r\n";
         }
 
-        public static string BuildSendError()
+        public string BuildSendError()
         {
             return "UPLOAD_ERROR\r\n";
         }

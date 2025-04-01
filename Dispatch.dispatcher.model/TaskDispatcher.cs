@@ -4,6 +4,9 @@ public class TaskDispatcher : ITaskDispatcher
 {
     private readonly IFileManager _fileManager;
     private readonly FileSender _fileSender;
+    
+    private readonly Protocol _protocol = Protocol.GetInstance();
+    
     public TaskDispatcher(IFileManager fileManager, FileSender fileSender)
     {
         _fileManager = fileManager;
@@ -18,8 +21,8 @@ public class TaskDispatcher : ITaskDispatcher
             string result = task.Type switch
             {
                 TaskItem.TaskType.Send => HandleUpload(task) == "POST_OK"
-                    ? DispatcherProtocol.BuildSendOk()
-                    : DispatcherProtocol.BuildSendError(),
+                    ? _protocol.BuildSendOk()
+                    : _protocol.BuildSendError(),
 
                 TaskItem.TaskType.Receive => "", //TODO 
                 TaskItem.TaskType.Delete => "",  //TODO 
