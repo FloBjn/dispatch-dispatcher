@@ -51,5 +51,9 @@ public class TaskItem(
     /// </summary>
     public TaskStatus Status { get; set; } = TaskStatus.InProgress;
     
+    public byte[] BinaryPayload { get; set; } = Array.Empty<byte>();
+    public string Result { get; set; }
     
+    public TaskCompletionSource<string>? CompletionSource { get; set; }
+    public int FileSize { get; set; }
 }

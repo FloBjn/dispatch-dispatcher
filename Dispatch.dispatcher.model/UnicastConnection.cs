@@ -1,61 +1,60 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 
-namespace Dispatch.disapatcher.model;
-
-public class UnicastConnection
+namespace Dispatch.dispatcher.model
 {
-    private TcpClient _client;
-    private NetworkStream? _stream;
-    private bool _isConnected;
-
-    private string? _ip;
-    private int? _port;
-
-    public UnicastConnection()
+    public class UnicastConnection
     {
-        _client = new TcpClient();
-        _isConnected = false;
-    }
+        private TcpClient _client;
+        private NetworkStream? _stream;
+        private bool _isConnected;
 
-    public void Connect(string ip, int port)
-    {
-        Console.WriteLine($"Connexion TCP vers {ip}:{port}");
+        private string? _ip;
+        private int? _port;
 
-        _ip = ip;
-        _port = port;
-        
-        _client.Connect(ip, port); //TODO ICI
-        _stream = _client.GetStream();
-        _isConnected = true;
-        
-        Console.WriteLine($"Connexion TCP réussie");
-    }
-    
-    public string ReadLine()
-    {
-        Console.WriteLine($"Lecture du message en provenance de {_ip}:{_port}");
-        byte[] buffer = new byte[1000];
-        int bytesRead = _stream.Read(buffer, 0, buffer.Length);
-        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-        Console.WriteLine($"Message reçu: '{message}'");
-        return message;
-    }
+        public UnicastConnection()
+        {
+            _client = new TcpClient();
+            _isConnected = false;
+        }
 
-    public void SendMessage(string message)
-    {
-        Console.WriteLine($"Envoie du message [{message}] vers l'IP {_ip}:{_port}");
-        byte[] data = Encoding.UTF8.GetBytes(message);
-        _stream.Write(data, 0, data.Length);
-        _stream.Flush();
-    }
+        public void Connect(string ip, int port)
+        {
+            _ip = ip;
+            _port = port;
 
-    public void Disconnect()
-    {
-        _stream?.Close();
-        _client.Close();
-        _client = new TcpClient();
-        _isConnected = false;
-        Console.WriteLine("Déconnexion TCP");
+            _client.Connect(ip, port);
+            _stream = _client.GetStream();
+            _isConnected = true;
+        }
+
+        public string ReadLine()
+        {
+            byte[] buffer = new byte[1000];
+            int bytesRead = _stream.Read(buffer, 0, buffer.Length);
+            string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            return message;
+        }
+
+        public void SendMessage(string message)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            _stream.Write(data, 0, data.Length);
+            _stream.Flush();
+        }
+
+        public void SendBytes(byte[] data)
+        {
+            _stream.Write(data, 0, data.Length);
+            _stream.Flush();
+        }
+
+        public void Disconnect()
+        {
+            _stream?.Close();
+            _client.Close();
+            _client = new TcpClient();
+            _isConnected = false;
+        }
     }
 }

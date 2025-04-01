@@ -1,5 +1,4 @@
 using System.Net.NetworkInformation;
-using Dispatch.disapatcher.model;
 using Dispatch.dispatcher.model;
 using Dispatch.dispatcher.infrastructure;
 using Dispatch.dispatcher.presenter;
@@ -34,10 +33,13 @@ public class Program
         var tcpContainer = new TcpContainer();
         
         // Gestion des fichiers 
-        IFileManager fileManager = new FileManager(new FileEncryptor(), tcpContainer, new FileHasher(), containerManager);
+        IFileManager fileManager = new FileManager(new FileEncryptor());
+        
+        // Gestion du catalogue
+        IFileCatalogManager fileCatalogManager = new FileCatalogManager(config);
         
         // Gestion des utilisateurs
-        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
+        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager, containerManager);
         
         // Gestion des tasks
         TaskDispatcher dispatcher = new TaskDispatcher(fileManager, new FileSender(tcpContainer));
@@ -50,11 +52,10 @@ public class Program
         
         multicastListener.StartListening();
         
-         
         
         // Interface utilisateur
         IMainView view = new View();
-        var presenter = new Presenter(view, server, multicastListener, new UserManager(config), taskManager);
+        var presenter = new Presenter(view, server, multicastListener, new UserManager(config), taskManager, fileCatalogManager);
         var cts = new CancellationTokenSource();
 
         // Démarrage du programme

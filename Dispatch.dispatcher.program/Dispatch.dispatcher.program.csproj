@@ -8,19 +8,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Dispatch.dispatcher.model\Dispatch.dispatcher.model.csproj" />
-      <ProjectReference Include="..\Dispatch.dispatcher.infrastructure\Dispatch.dispatcher.infrastructure.csproj" />
-      <ProjectReference Include="..\Dispatch.dispatcher.presenter\Dispatch.dispatcher.presenter.csproj" />
-      <ProjectReference Include="..\Dispatch.dispatcher.view\Dispatch.dispatcher.view.csproj" />
+        <ProjectReference Include="..\Dispatch.dispatcher.model\Dispatch.dispatcher.model.csproj" />
+        <ProjectReference Include="..\Dispatch.dispatcher.infrastructure\Dispatch.dispatcher.infrastructure.csproj" />
+        <ProjectReference Include="..\Dispatch.dispatcher.presenter\Dispatch.dispatcher.presenter.csproj" />
+        <ProjectReference Include="..\Dispatch.dispatcher.view\Dispatch.dispatcher.view.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="config.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="certificat\labs25.swi.ovh.p12">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="config.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="certificat\labs25.swi.ovh.p12">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BouncyCastle.NetCore" Version="2.2.1" />
     </ItemGroup>
 
 </Project>

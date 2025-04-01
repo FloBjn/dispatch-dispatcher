@@ -44,8 +44,13 @@ public class TaskManager
     /// <summary>
     /// Ajoute une tâche à la file d'attente.
     /// </summary>
-    public void AddTask(TaskItem task)
+    public Task<string> AddTask(TaskItem task)
     {
+        var tcs = new TaskCompletionSource<string>();
+        task.CompletionSource = tcs;
+
         _taskQueue.Add(task);
+        return tcs.Task; // Tu pourras await ça dans TcpServer
     }
+
 } 

@@ -1,4 +1,0 @@
-{"files": [
-  {"FileName": "fichier1.txt", "Size": "20", "Username": "LOCAL2","Iv": "fySJXQMZbhSYfsfP", "Aad": "ZmljaGllcjEudHh0", "Tag": "hGZKXzsWC3Zd9ybhaYaeIA==", "Containers": [{"ContainerName": "c1"}, {"ContainerName": "c2"}]},
-  {"FileName": "fichier2.txt", "Size": "20", "Username": "LOCAL2","Iv": "fySJXQMZbhSYfsfP", "Aad": "ZmljaGllcjEudHh0", "Tag": "hGZKXzsWC3Zd9ybhaYaeIA==", "Containers": [{"ContainerName": "c1"}, {"ContainerName": "c2"}, {"ContainerName": "c3"}] }
-]}
