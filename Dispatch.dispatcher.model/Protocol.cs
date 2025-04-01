@@ -2,15 +2,14 @@
 
 namespace Dispatch.dispatcher.model
 {
-    
     public static class DispatcherProtocol
     {
         // Définition des regex basées sur l'ABNF
         private const string Letter = "[A-Za-z]";
         private const string Digit = "[0-9]";
         private const string LetterDigit = $"({Letter}|{Digit})";
-        private const string Esp = @"\x20";  
-        private const string Eol = @"\x0D\x0A";  
+        private const string Esp = @"\x20";
+        private const string Eol = @"\x0D\x0A";
         private const string CarPass = @"[\x24-\xFF]";
         private const string Hash = "[A-Za-z0-9]{50,200}";
 
@@ -82,7 +81,7 @@ namespace Dispatch.dispatcher.model
         {
             if (fileName.Length != size.Length)
                 throw new ArgumentException("Tout les fichiers doivent avoir une taille associée.");
-            
+
             var fileInfos = fileName
                 .Select((name, i) =>
                 {
@@ -90,7 +89,7 @@ namespace Dispatch.dispatcher.model
                         throw new ArgumentException("Format invalide pour CATALOGUE.");
                     return $"{name}#{size[i]}";
                 });
-            
+
             return $"INVENTORY {string.Join(" ", fileInfos)}\r\n";
         }
 
@@ -107,7 +106,8 @@ namespace Dispatch.dispatcher.model
             Console.WriteLine($"→ hashFilename = {hashFilename}");
             Console.WriteLine($"→ size = {size}");
             Console.WriteLine($"→ hashFileContent = {hashFileContent}");
-            if (!IsValid(hashFilename, HashFilename) || !IsValid(size.ToString(), Size) || !IsValid(hashFileContent, HashFileContent))
+            if (!IsValid(hashFilename, HashFilename) || !IsValid(size.ToString(), Size) ||
+                !IsValid(hashFileContent, HashFileContent))
                 throw new ArgumentException("Format invalide pour POST.");
 
             return $"POST {hashFilename} {size} {hashFileContent}\r\n";
@@ -175,7 +175,10 @@ namespace Dispatch.dispatcher.model
         public static (string hashFilename, int size, string hashFileContent)? ParsePost(string message)
         {
             Match match = PostRegex.Match(message);
-            return match.Success ? (match.Groups["hash_filename"].Value, int.Parse(match.Groups["size"].Value), match.Groups["hash_filecontent"].Value) : null;
+            return match.Success
+                ? (match.Groups["hash_filename"].Value, int.Parse(match.Groups["size"].Value),
+                    match.Groups["hash_filecontent"].Value)
+                : null;
         }
 
         public static string? ParseDelete(string message)
@@ -200,6 +203,16 @@ namespace Dispatch.dispatcher.model
         public static string BuildLoginOk()
         {
             return "LOGIN_OK\r\n";
+        }
+
+        public static string BuildSendOk()
+        {
+            return "UPLOAD_OK\r\n";
+        }
+
+        public static string BuildSendError()
+        {
+            return "UPLOAD_ERROR\r\n";
         }
     }
 }

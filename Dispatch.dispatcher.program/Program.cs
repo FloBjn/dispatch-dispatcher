@@ -33,13 +33,13 @@ public class Program
         var tcpContainer = new TcpContainer();
         
         // Gestion des fichiers 
-        IFileManager fileManager = new FileManager(new FileEncryptor(), new FileHasher(), containerManager);
+        IFileManager fileManager = new FileManager(new FileEncryptor());
         
         // Gestion du catalogue
         IFileCatalogManager fileCatalogManager = new FileCatalogManager(config);
         
         // Gestion des utilisateurs
-        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager);
+        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager, containerManager);
         
         // Gestion des tasks
         TaskDispatcher dispatcher = new TaskDispatcher(fileManager, new FileSender(tcpContainer));

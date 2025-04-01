@@ -58,7 +58,6 @@ public class TcpServer
                 };
 
                 await sslStream.AuthenticateAsServerAsync(options);
-                Console.WriteLine($"Connexion sécurisée établie avec TLS : {sslStream.SslProtocol}");
 
                 while (tcpClient.Connected)
                 {
@@ -67,13 +66,11 @@ public class TcpServer
 
                     if (bytesRead == 0)
                     {
-                        Console.WriteLine("Client déconnecté.");
                         break;
                     }
 
                     string response = "";
                     string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Console.WriteLine($"Message reçu : {message}");
 
                     if (DispatcherProtocol.ParseLogin(message) is (string username, string password))
                     {
@@ -114,7 +111,6 @@ public class TcpServer
                             if (taskItem != null && OnTaskReceived != null)
                             {
                                 response = await OnTaskReceived.Invoke(taskItem);
-                                await SendResponseAsync(sslStream, response);
                             }
                         }
                     }

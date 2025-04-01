@@ -10,11 +10,13 @@ public class ClientMessageAnalyser
 {
     private readonly IUserManager _userManager;
     private readonly IFileManager _fileManager;
+    private readonly ContainerManager _containerManager;
 
-    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager)
+    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager, ContainerManager containerManager)
     {
         _userManager = userManager;
         _fileManager = fileManager;
+        _containerManager = containerManager;
     }
 
     /// <summary>
@@ -25,15 +27,11 @@ public class ClientMessageAnalyser
         // Étape 1 : Réception du contenu binaire (UPLOAD)
         if (activeClient is { CurrentFile: not null, AwaitingUploadContent: true })
         {
-            Console.WriteLine("Contenu de fichier reçu, traitement en cours...");
-
             activeClient.CurrentFile.AppendChunk(buffer, bytesRead);
 
             if (activeClient.CurrentFile.IsComplete())
             {
                 _fileManager.Encrypte(activeClient.CurrentFile, activeClient.CurrentFile.Content);
-                Console.WriteLine($"DUMP C#   : {BitConverter.ToString(activeClient.CurrentFile.EncryptedContent).Replace("-", "").ToLower()}");
-
                 var fileHasher = new FileHasher();
                 var (hashFileName, hashFileContent) = fileHasher.HashFile(activeClient.CurrentFile);
 
@@ -46,17 +44,19 @@ public class ClientMessageAnalyser
                     hashFileContent
                 );
 
-
+                var containers = _containerManager.GetActiveContainers();
+                var containerNames = containers.Select(c => c.Name).ToList();
 
                 var task = new TaskItem(
                     TaskItem.TaskType.Send,
                     activeClient.CurrentFile.FileName,
                     commandHeader,
                     activeClient.Username,
-                    new List<string> { "C1" }
+                    containerNames
                 )
                 {
-                    BinaryPayload = activeClient.CurrentFile.EncryptedContent
+                    BinaryPayload = activeClient.CurrentFile.EncryptedContent,
+                    FileSize = activeClient.CurrentFile.EncryptedContent.Length
                 };
 
                 activeClient.AwaitingUploadContent = false;
@@ -102,7 +102,6 @@ public class ClientMessageAnalyser
             return new TaskItem(TaskItem.TaskType.Delete, purgeFile, "DELETE", activeClient.Username,
                 new List<string>());
         }
-
 
         throw new NotImplementedException("Commande non reconnue ou non implémentée : " + message);
     }
