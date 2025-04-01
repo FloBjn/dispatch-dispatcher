@@ -24,7 +24,9 @@ public class TaskDispatcher : ITaskDispatcher
                     ? _protocol.BuildSendOk()
                     : _protocol.BuildSendError(),
 
-                TaskItem.TaskType.Receive => "", //TODO 
+                TaskItem.TaskType.Receive => HandleDownload(task) == "" 
+                    ? "DOWNLOAD_OK" 
+                    : "DOWNLOAD_ERROR", //TODO 
                 TaskItem.TaskType.Delete => "",  //TODO 
 
                 _ => ""
@@ -53,9 +55,11 @@ public class TaskDispatcher : ITaskDispatcher
         return response;
     }
 
-    private void HandleDownload(TaskItem task)
+    private string HandleDownload(TaskItem task)
     {
         // TODO : Interroger le container pour récupérer le fichier
+        _fileSender.SendTaskAt(task.ContainerId, task);
+        throw new NotImplementedException();
     }
 
     private void HandleDelete(TaskItem task)

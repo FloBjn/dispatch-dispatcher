@@ -24,4 +24,6 @@ public class FileHasher
         byte[] hash = sha384.ComputeHash(data);
         return BitConverter.ToString(hash).Replace("-", "").ToLower();
     }
+
+    public string HashFileName(string fileFileName) => ComputeSha384Hex(Encoding.UTF8.GetBytes(fileFileName));
 }

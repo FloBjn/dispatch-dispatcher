@@ -3,15 +3,10 @@ using Dispatch.dispatcher.model;
 
 namespace Dispatch.dispatcher.infrastructure;
 
-public class FileManager : IFileManager
+public class FileManager(FileEncryptor encryptor) : IFileManager
 {
-    private FileEncryptor _encryptor;
+    private FileEncryptor _encryptor = encryptor;
 
-    public FileManager(FileEncryptor encryptor)
-    {
-        _encryptor = encryptor;
-    }
-    
     /// <summary>
     /// Méthode ayant pour but de sauvegarder un fichier grace à un fichier JSON
     /// </summary>
@@ -49,6 +44,21 @@ public class FileManager : IFileManager
     public void Encrypte(OurFile ourFile, byte[] content)
     {
         _encryptor.Encrypte(ourFile, content);
+    }
+
+    public UserWithFiles GetFileByName(string downloadFile)
+    {
+        var config = Config.Load("config.json");
+        
+        // Parcourir tous les user pour voir si ils ont dowloadFile
+        var file = config.Users.Find(files => files.Files.Any(f => f.FileName == downloadFile));
+
+        if (file == null)
+        {
+            throw new Exception("Impossible de trouver le fichier");
+        }
+
+        return file;
     }
 
 

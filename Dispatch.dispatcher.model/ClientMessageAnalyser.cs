@@ -95,8 +95,28 @@ public class ClientMessageAnalyser
 
         if (_protocol.ParseDownload(message) is string downloadFile)
         {
-            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, "GET", activeClient.Username,
-                new List<string>());
+            var userWithFiles = _fileManager.GetFileByName(downloadFile);
+            var file = userWithFiles.Files.Find(file => file.FileName == downloadFile);
+
+            if (file == null)
+            {
+                throw new Exception("File non trouvé");
+            }
+            
+            var hasher = new FileHasher();
+            string hashFileName = hasher.HashFileName(file.FileName);
+            
+            // TODO: Vérifier que l'utilisateur bien le droit de récupérer ce fichier (qu'il lui appartient)
+            
+            // TODO: Récupérer les containers concernés
+            List<string> containersId = file.Containers;
+            
+            // TODO: Construire la commande GET
+            string getCommand = _protocol.BuildGet(hashFileName);
+            
+            // TODO: Retourner la tâche
+            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, getCommand, activeClient.Username,
+                containersId);
         }
 
         if (_protocol.ParsePurge(message) is string purgeFile)
