@@ -2,7 +2,7 @@
   "MulticastAddress": "224.123.123.123",
   "MulticastPort": 50204,
   "UnicastPort": 12345,
-  "NetworkInterface": "ethernet_32769",
+  "NetworkInterface": "Wi-Fi",
   "Tls": true,
   "WorkingFolderPath": "C:\\TEMP\\DISPATCHER",
   "CertificatePath": "certificat/labs25.swi.ovh.p12",
