@@ -110,8 +110,14 @@ public class TcpServer
                             TaskItem? taskItem = _messageAnalyser.AnalyseMessage(buffer, bytesRead, activeClient);
                             if (taskItem != null && OnTaskReceived != null)
                             {
-                                response = await OnTaskReceived.Invoke(taskItem);
+                                taskItem.CompletionSource = new TaskCompletionSource<string>();
+
+                                await OnTaskReceived.Invoke(taskItem);
+
+                                response = await taskItem.CompletionSource.Task;
+
                             }
+
                         }
                     }
 

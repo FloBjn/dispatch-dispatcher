@@ -49,6 +49,7 @@ public class ClientMessageAnalyser
 
                 var task = new TaskItem(
                     TaskItem.TaskType.Send,
+                    TaskItem.TaskStatus.InProgress,
                     activeClient.CurrentFile.FileName,
                     commandHeader,
                     activeClient.Username,
@@ -93,13 +94,14 @@ public class ClientMessageAnalyser
 
         if (DispatcherProtocol.ParseDownload(message) is string downloadFile)
         {
-            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, "GET", activeClient.Username,
+            return new TaskItem(TaskItem.TaskType.Receive, TaskItem.TaskStatus.InProgress, downloadFile, "GET",
+                activeClient.Username,
                 new List<string>());
         }
 
         if (DispatcherProtocol.ParsePurge(message) is string purgeFile)
         {
-            return new TaskItem(TaskItem.TaskType.Delete, purgeFile, "DELETE", activeClient.Username,
+            return new TaskItem(TaskItem.TaskType.Delete, TaskItem.TaskStatus.InProgress, purgeFile, "DELETE", activeClient.Username,
                 new List<string>());
         }
 

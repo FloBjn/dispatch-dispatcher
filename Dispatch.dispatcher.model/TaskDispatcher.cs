@@ -10,37 +10,49 @@ public class TaskDispatcher : ITaskDispatcher
         _fileSender = fileSender;
     }
 
-    public string Dispatch(TaskItem task)
+    public void Dispatch(TaskItem task)
     {
-        
         try
         {
-            string result = task.Type switch
+            switch (task.Type)
             {
-                TaskItem.TaskType.Send => HandleUpload(task) == "POST_OK"
-                    ? DispatcherProtocol.BuildSendOk()
-                    : DispatcherProtocol.BuildSendError(),
+                case TaskItem.TaskType.Send:
+                    string result = HandleUpload(task);
+                    if (result == "POST_OK")
+                    {
+                        task.Status = TaskItem.TaskStatus.Completed;
+                        task.CompletionSource?.SetResult(DispatcherProtocol.BuildSendOk());
+                    }
+                    else
+                    {
+                        task.Status = TaskItem.TaskStatus.Error;
+                        task.CompletionSource?.SetResult(DispatcherProtocol.BuildSendError());
+                    }
+                    break;
 
-                TaskItem.TaskType.Receive => "", //TODO 
-                TaskItem.TaskType.Delete => "",  //TODO 
+                case TaskItem.TaskType.Receive:
+                    HandleDownload(task);
+                    // Gère le statut + réponse via CompletionSource plus tard
+                    break;
 
-                _ => ""
-            };
+                case TaskItem.TaskType.Delete:
+                    HandleDelete(task);
+                    // Idem
+                    break;
 
-            task.Status = TaskItem.TaskStatus.Completed;
-
-            task.CompletionSource?.SetResult(result);
-
-            return result;
+                default:
+                    task.Status = TaskItem.TaskStatus.Error;
+                    task.CompletionSource?.SetResult("UNKNOWN_TASK_TYPE");
+                    break;
+            }
         }
         catch (Exception ex)
         {
             task.Status = TaskItem.TaskStatus.Error;
-
-            task.CompletionSource?.SetResult("ERROR"); 
-            return "";
+            task.CompletionSource?.SetResult("ERROR: " + ex.Message);
         }
     }
+
 
 
     private string HandleUpload(TaskItem task)

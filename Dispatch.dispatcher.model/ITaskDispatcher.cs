@@ -2,5 +2,5 @@
 
 public interface ITaskDispatcher
 {
-    string Dispatch(TaskItem task);
+    void Dispatch(TaskItem task);
 }
