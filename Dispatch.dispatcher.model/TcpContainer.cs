@@ -25,14 +25,27 @@
             }
         }
 
-        public void SendTaskAt(IList<string> containerIds, TaskItem task)
+        public void SendTaskAtFirst(TaskItem task)
         {
-            foreach (var id in containerIds)
+            var taskSent = false;
+            foreach (var id in task.ContainerId)
             {
-                if (_connections.TryGetValue(id, out var connection))
+                if (!_connections.TryGetValue(id, out var connection)) continue;
+                try
                 {
                     connection.EnqueueTask(task);
+                    taskSent = true;
+                    break;
                 }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Erreur lors de l'envoie");
+                }
+            }
+
+            if (!taskSent)
+            {
+                throw new InvalidOperationException("Failed to send task to any container.");
             }
         }
 
