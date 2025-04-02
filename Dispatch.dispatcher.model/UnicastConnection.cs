@@ -45,6 +45,7 @@ namespace Dispatch.dispatcher.model
 
         public void SendBytes(byte[] data)
         {
+            
             _stream.Write(data, 0, data.Length);
             _stream.Flush();
         }

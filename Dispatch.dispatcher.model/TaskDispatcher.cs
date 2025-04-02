@@ -17,42 +17,43 @@ public class TaskDispatcher : ITaskDispatcher
     {
         try
         {
+            string result = "";
+
             switch (task.Type)
             {
                 case TaskItem.TaskType.Send:
-                    string result = HandleUpload(task);
-                    if (result == "POST_OK")
-                    {
-                        task.Status = TaskItem.TaskStatus.Completed;
-                        task.CompletionSource?.SetResult(_protocol.BuildSendOk());
-                    }
-                    else
-                    {
-                        task.Status = TaskItem.TaskStatus.Error;
-                        task.CompletionSource?.SetResult(_protocol.BuildSendError());
-                    }
+                    result = HandleUpload(task);
+                    Console.WriteLine("CACA" + result);
+                    task.Status = result == "POST_OK"
+                        ? TaskItem.TaskStatus.Completed
+                        : TaskItem.TaskStatus.Error;
                     break;
 
                 case TaskItem.TaskType.Receive:
-                    HandleDownload(task);
-                    // Gère le statut + réponse via CompletionSource plus tard
+                    HandleDownload(task); // TODO: compléter la logique
+                    task.Status = TaskItem.TaskStatus.Completed;
+                    result = "DOWNLOAD_OK"; // temporaire
                     break;
 
                 case TaskItem.TaskType.Delete:
-                    HandleDelete(task);
-                    // Idem
+                    HandleDelete(task); // TODO: compléter
+                    task.Status = TaskItem.TaskStatus.Completed;
+                    result = "DELETE_OK"; // temporaire
                     break;
 
                 default:
                     task.Status = TaskItem.TaskStatus.Error;
-                    task.CompletionSource?.SetResult("UNKNOWN_TASK_TYPE");
+                    result = "UNKNOWN_TASK_TYPE";
                     break;
             }
+
+            task.CompletionSource?.SetResult(result);
         }
         catch (Exception ex)
         {
             task.Status = TaskItem.TaskStatus.Error;
-            task.CompletionSource?.SetResult("ERROR: " + ex.Message);
+            task.CompletionSource?.SetResult("ERROR");
+            Console.WriteLine($"[TaskDispatcher] Erreur : {ex.Message}");
         }
     }
 
@@ -68,7 +69,6 @@ public class TaskDispatcher : ITaskDispatcher
     {
         // TODO : Interroger le container pour récupérer le fichier
         _fileSender.SendTaskAt(task.ContainerId, task);
-        throw new NotImplementedException();
     }
 
     private void HandleDelete(TaskItem task)

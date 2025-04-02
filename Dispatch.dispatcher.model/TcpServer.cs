@@ -116,8 +116,14 @@ public class TcpServer
 
                                 await OnTaskReceived.Invoke(taskItem);
 
-                                response = await taskItem.CompletionSource.Task;
+                                var containerResult = await taskItem.CompletionSource.Task;
 
+                                response = containerResult switch
+                                {
+                                    "POST_OK"    => _protocol.BuildSendOk(),     
+                                    "POST_ERROR" => _protocol.BuildSendError(),  
+                                    _            => "ERROR"                      
+                                };
                             }
 
                         }
