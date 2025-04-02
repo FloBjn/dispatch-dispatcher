@@ -49,7 +49,7 @@ public class ClientMessageAnalyser
                 var containers = _containerManager.GetActiveContainers();
                 var containerNames = containers.Select(c => c.Name).ToList();
 
-                var task = new TaskItem(
+                var task = new TaskItem( 
                     TaskItem.TaskType.Send,
                     TaskItem.TaskStatus.InProgress,
                     activeClient.CurrentFile.FileName,
@@ -88,9 +88,7 @@ public class ClientMessageAnalyser
             };
 
             activeClient.AwaitingUploadContent = true;
-
-            Console.WriteLine(
-                $"Requête d'UPLOAD reçue pour {fileName} ({fileSize} octets). En attente de contenu...");
+            
             return null;
         }
 

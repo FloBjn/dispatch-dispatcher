@@ -21,16 +21,5 @@ namespace Dispatch.dispatcher.model
                 return BitConverter.ToString(hash).Replace("-", "").ToLower(); // Conversion en hexadécimal
             }
         }
-
-        /// <summary>
-        /// Vérifie si un mot de passe correspond à un hachage SHA3-384 donné.
-        /// </summary>
-        /// <param name="password">Le mot de passe en clair.</param>
-        /// <param name="hashedPassword">Le hachage SHA3-384 attendu.</param>
-        /// <returns>True si le mot de passe correspond au hachage, False sinon.</returns>
-        public static bool VerifyPassword(string password, string hashedPassword)
-        {
-            return HashPassword(password) == hashedPassword;
-        }
     }
 }

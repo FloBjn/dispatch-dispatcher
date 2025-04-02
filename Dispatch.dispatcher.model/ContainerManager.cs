@@ -61,29 +61,11 @@ public class ContainerManager
         }
     }
 
-    /// <summary>
-    /// Liste les Containers actifs.
-    /// </summary>
-    public void ListContainers()
-    {
-        Console.WriteLine("Liste des Containers actifs :");
-        foreach (var (name, container) in _containers)
-        {
-            Console.WriteLine($"{name} - {container.IP}:{container.Port}");
-        }
-    }
-
     public List<(string Name, string IP, int Port)> GetActiveContainers()
     {
         lock (_lock)
         {
             return _containers.Select(c => (c.Key, c.Value.IP, c.Value.Port)).ToList();
         }
-    }
-
-
-    public object GetFirstContainerIp()
-    {
-        throw new NotImplementedException();
     }
 }

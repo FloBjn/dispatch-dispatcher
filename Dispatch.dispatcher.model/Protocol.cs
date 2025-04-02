@@ -44,45 +44,6 @@ namespace Dispatch.dispatcher.model
         }
         
         // Méthodes de génération des messages
-        public string BuildLogin(string username, string password)
-        {
-            if (!IsValid(username, Username) || !IsValid(password, Password))
-                throw new ArgumentException("Format invalide pour LOGIN.");
-
-            return $"LOGIN {username} {password}\r\n";
-        }
-
-        public string BuildRegister(string username, string password)
-        {
-            if (!IsValid(username, Username) || !IsValid(password, Password))
-                throw new ArgumentException("Format invalide pour REGISTER.");
-
-            return $"REGISTER {username} {password}\r\n";
-        }
-
-        public string BuildUpload(string filename, int size)
-        {
-            if (!IsValid(filename, Filename) || !IsValid(size.ToString(), Size))
-                throw new ArgumentException("Format invalide pour UPLOAD.");
-
-            return $"UPLOAD {filename} {size}\r\n";
-        }
-
-        public string BuildDownload(string filename)
-        {
-            if (!IsValid(filename, Filename))
-                throw new ArgumentException("Format invalide pour DOWNLOAD.");
-
-            return $"DOWNLOAD {filename}\r\n";
-        }
-
-        public string BuildPurge(string filename)
-        {
-            if (!IsValid(filename, Filename))
-                throw new ArgumentException("Format invalide pour PURGE.");
-
-            return $"PURGE {filename}\r\n";
-        }
 
         public string BuildCatalogue(string[] fileName, int[] size)
         {
@@ -100,32 +61,13 @@ namespace Dispatch.dispatcher.model
             return $"INVENTORY {string.Join(" ", fileInfos)}\r\n";
         }
 
-        public string BuildAlive(string domain, int port)
-        {
-            if (!IsValid(domain, Domain) || !IsValid(port.ToString(), Port))
-                throw new ArgumentException("Format invalide pour ALIVE.");
-
-            return $"ALIVE {domain} {port}\r\n";
-        }
-
         public string BuildPost(string hashFilename, int size, string hashFileContent)
         {
-            Console.WriteLine($"→ hashFilename = {hashFilename}");
-            Console.WriteLine($"→ size = {size}");
-            Console.WriteLine($"→ hashFileContent = {hashFileContent}");
             if (!IsValid(hashFilename, HashFilename) || !IsValid(size.ToString(), Size) ||
                 !IsValid(hashFileContent, HashFileContent))
                 throw new ArgumentException("Format invalide pour POST.");
 
             return $"POST {hashFilename} {size} {hashFileContent}\r\n";
-        }
-
-        public string BuildDelete(string hashFilename)
-        {
-            if (!IsValid(hashFilename, HashFilename))
-                throw new ArgumentException("Format invalide pour DELETE.");
-
-            return $"DELETE {hashFilename}\r\n";
         }
 
         public string BuildGet(string hashFilename)
@@ -177,27 +119,6 @@ namespace Dispatch.dispatcher.model
         {
             Match match = AliveRegex.Match(message);
             return match.Success ? (match.Groups["domain"].Value, int.Parse(match.Groups["port"].Value)) : null;
-        }
-
-        public (string hashFilename, int size, string hashFileContent)? ParsePost(string message)
-        {
-            Match match = PostRegex.Match(message);
-            return match.Success
-                ? (match.Groups["hash_filename"].Value, int.Parse(match.Groups["size"].Value),
-                    match.Groups["hash_filecontent"].Value)
-                : null;
-        }
-
-        public string? ParseDelete(string message)
-        {
-            Match match = DeleteRegex.Match(message);
-            return match.Success ? match.Groups["hash_filename"].Value : null;
-        }
-
-        public string? ParseGet(string message)
-        {
-            Match match = GetRegex.Match(message);
-            return match.Success ? match.Groups["hash_filename"].Value : null;
         }
 
         private static bool IsValid(string value, string pattern) => Regex.IsMatch(value, $"^{pattern}$");

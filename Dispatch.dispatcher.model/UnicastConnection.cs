@@ -9,9 +9,6 @@ namespace Dispatch.dispatcher.model
         private NetworkStream? _stream;
         private bool _isConnected;
 
-        private string? _ip;
-        private int? _port;
-
         public UnicastConnection()
         {
             _client = new TcpClient();
@@ -20,9 +17,6 @@ namespace Dispatch.dispatcher.model
 
         public void Connect(string ip, int port)
         {
-            _ip = ip;
-            _port = port;
-
             _client.Connect(ip, port);
             _stream = _client.GetStream();
             _isConnected = true;
@@ -34,13 +28,6 @@ namespace Dispatch.dispatcher.model
             int bytesRead = _stream.Read(buffer, 0, buffer.Length);
             string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
             return message;
-        }
-
-        public void SendMessage(string message)
-        {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            _stream.Write(data, 0, data.Length);
-            _stream.Flush();
         }
 
         public void SendBytes(byte[] data)

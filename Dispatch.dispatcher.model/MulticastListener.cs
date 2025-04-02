@@ -64,9 +64,6 @@ public class MulticastListener
             }
 
             udpClient.JoinMulticastGroup(IPAddress.Parse(_multicastAdr), localIp);
-            Console.WriteLine($"Interface {_networkInterfaceName} ({localIp}) rejointe au groupe multicast.");
-
-            Console.WriteLine($"Écoute des Containers sur {_multicastAdr}:{_multicastPort} via {_networkInterfaceName}...");
 
             while (true)
             {

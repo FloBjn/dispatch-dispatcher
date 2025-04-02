@@ -34,7 +34,7 @@ public class OurFile
     public User User { get; set; }
     
     public byte[] Content => _stream.ToArray();
-
+    
     public byte[] Iv { get; set; } // Signifie Initialisation Vector --> sers au chiffrement AESGCM
     public byte[] Aad { get; set; } // Signifie Additional Authenticated Data --> sers également au chiffrement AESGCM
     public byte[] Tag { get; set; }
