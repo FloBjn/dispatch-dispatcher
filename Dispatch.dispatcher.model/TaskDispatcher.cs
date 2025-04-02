@@ -15,37 +15,48 @@ public class TaskDispatcher : ITaskDispatcher
 
     public void Dispatch(TaskItem task)
     {
-        
         try
         {
-            string result = task.Type switch
+            string result = "";
+
+            switch (task.Type)
             {
-                TaskItem.TaskType.Send => HandleUpload(task) == "POST_OK"
-                    ? _protocol.BuildSendOk()
-                    : _protocol.BuildSendError(),
+                case TaskItem.TaskType.Send:
+                    result = HandleUpload(task);
+                    Console.WriteLine("CACA" + result);
+                    task.Status = result == "POST_OK"
+                        ? TaskItem.TaskStatus.Completed
+                        : TaskItem.TaskStatus.Error;
+                    break;
 
-                TaskItem.TaskType.Receive => HandleDownload(task) == "" 
-                    ? "DOWNLOAD_OK" 
-                    : "DOWNLOAD_ERROR", //TODO 
-                TaskItem.TaskType.Delete => "",  //TODO 
+                case TaskItem.TaskType.Receive:
+                    HandleDownload(task); // TODO: compléter la logique
+                    task.Status = TaskItem.TaskStatus.Completed;
+                    result = "DOWNLOAD_OK"; // temporaire
+                    break;
 
-                _ => ""
-            };
+                case TaskItem.TaskType.Delete:
+                    HandleDelete(task); // TODO: compléter
+                    task.Status = TaskItem.TaskStatus.Completed;
+                    result = "DELETE_OK"; // temporaire
+                    break;
 
-            task.Status = TaskItem.TaskStatus.Completed;
+                default:
+                    task.Status = TaskItem.TaskStatus.Error;
+                    result = "UNKNOWN_TASK_TYPE";
+                    break;
+            }
 
             task.CompletionSource?.SetResult(result);
-
-            return result;
         }
         catch (Exception ex)
         {
             task.Status = TaskItem.TaskStatus.Error;
-
-            task.CompletionSource?.SetResult("ERROR"); 
-            return "";
+            task.CompletionSource?.SetResult("ERROR");
+            Console.WriteLine($"[TaskDispatcher] Erreur : {ex.Message}");
         }
     }
+
 
 
     private string HandleUpload(TaskItem task)
@@ -55,11 +66,10 @@ public class TaskDispatcher : ITaskDispatcher
         return response;
     }
 
-    private string HandleDownload(TaskItem task)
+    private void HandleDownload(TaskItem task)
     {
         // TODO : Interroger le container pour récupérer le fichier
         _fileSender.SendTaskAt(task.ContainerId, task);
-        throw new NotImplementedException();
     }
 
     private void HandleDelete(TaskItem task)

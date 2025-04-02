@@ -96,9 +96,6 @@ public class ClientMessageAnalyser
 
         if (_protocol.ParseDownload(message) is string downloadFile)
         {
-            return new TaskItem(TaskItem.TaskType.Receive, TaskItem.TaskStatus.InProgress, downloadFile, "GET",
-                activeClient.Username,
-                new List<string>());
             var userWithFiles = _fileManager.GetFileByName(downloadFile);
             var file = userWithFiles.Files.Find(file => file.FileName == downloadFile);
 
@@ -119,7 +116,7 @@ public class ClientMessageAnalyser
             string getCommand = _protocol.BuildGet(hashFileName);
             
             // TODO: Retourner la tâche
-            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, getCommand, activeClient.Username,
+            return new TaskItem(TaskItem.TaskType.Receive, TaskItem.TaskStatus.InProgress, downloadFile, getCommand, activeClient.Username,
                 containersId);
         }
 
