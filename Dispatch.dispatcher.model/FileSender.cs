@@ -28,9 +28,19 @@
             return task.Result;
         }
 
-        public void SendTaskAt(IList<string> containerIds, TaskItem task)
+        public string SendTaskAtFirstContainerConnected(TaskItem task)
         {
-            _tcpContainer.SendTaskAt(containerIds, task);
+            if (string.IsNullOrEmpty((task.Command)))
+                throw new ArgumentException("La commande est vide");
+                
+            _tcpContainer.SendTaskAtFirst(task);
+            
+            while (string.IsNullOrEmpty(task.Result))
+            {
+                Thread.Sleep(10);
+            }
+            
+            return task.Result;
         }
 
         public void SendDeleteToEach(TaskItem task)

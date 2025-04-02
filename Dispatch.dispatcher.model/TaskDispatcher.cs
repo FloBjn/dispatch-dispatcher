@@ -33,9 +33,17 @@ public class TaskDispatcher : ITaskDispatcher
                     break;
 
                 case TaskItem.TaskType.Receive:
-                    HandleDownload(task); // TODO: compléter la logique
-                    task.Status = TaskItem.TaskStatus.Completed;
-                    result = "DOWNLOAD_OK"; // temporaire
+                    var response = HandleDownload(task); // TODO: compléter la logique
+                    if (response != "")
+                    {
+                        task.Status = TaskItem.TaskStatus.Completed;
+                        result = "DOWNLOAD_OK"; // temporaire
+                    }
+                    else
+                    {
+                        task.Status = TaskItem.TaskStatus.Error;
+                        result = "DOWNLOAD_ERROR";
+                    }
                     break;
 
                 case TaskItem.TaskType.Delete:
@@ -57,8 +65,8 @@ public class TaskDispatcher : ITaskDispatcher
                             task.Status = TaskItem.TaskStatus.Error;
                         }
                     }
-                    return;
 
+                    break;
 
                 default:
                     task.Status = TaskItem.TaskStatus.Error;
@@ -83,10 +91,17 @@ public class TaskDispatcher : ITaskDispatcher
         return response;
     }
 
-    private void HandleDownload(TaskItem task)
+    private string HandleDownload(TaskItem task)
     {
-        // TODO : Interroger le container pour récupérer le fichier
-        _fileSender.SendTaskAt(task.ContainerId, task);
+        try
+        {
+            var response = _fileSender.SendTaskAtFirstContainerConnected(task);
+            return response;
+        }
+        catch
+        {
+            return "DOWNLOAD_ERROR";
+        }
     }
 
     private void HandleDelete(TaskItem task)
