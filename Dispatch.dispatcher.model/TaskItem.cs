@@ -2,6 +2,7 @@ namespace Dispatch.dispatcher.model;
 
 public class TaskItem(
     TaskItem.TaskType type,
+    TaskItem.TaskStatus status,
     string fileName,
     string command,
     string userName,
