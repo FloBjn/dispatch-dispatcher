@@ -12,6 +12,8 @@ public class Presenter
     private readonly TaskManager _taskManager;
     private readonly IFileCatalogManager _fileCatalogManager;
 
+    private readonly Protocol _protocol = Protocol.GetInstance();
+    
     public Presenter(IMainView view, TcpServer unicastServer,
         MulticastListener multicastListener, IUserManager userManager, TaskManager taskManager, IFileCatalogManager fileCatalogManager)
     {
@@ -43,33 +45,30 @@ public class Presenter
     {
         if (_userManager.VerifyUser(userName, password) != null)
         {
-            return Task.FromResult(DispatcherProtocol.BuildLoginError());
+            return Task.FromResult(_protocol.BuildLoginError());
         }
 
         _userManager.AddUser(new User
             { Username = userName, PasswordHash = password, AesKey = AesKeyGenerator.GenerateAesKey() });
-        return Task.FromResult(DispatcherProtocol.BuildLoginOk());
+        return Task.FromResult(_protocol.BuildLoginOk());
     }
 
     private Task<string> LoginClient(string userName, string password)
     {
         var user = _userManager.VerifyUser(userName, password);
         return user != null
-            ? Task.FromResult(DispatcherProtocol.BuildLoginOk())
-            : Task.FromResult(DispatcherProtocol.BuildLoginError());
+            ? Task.FromResult(_protocol.BuildLoginOk())
+            : Task.FromResult(_protocol.BuildLoginError());
     }
 
     private Task<string> CatalogClient(string currentUser)
     {
         var catalog = _fileCatalogManager.LoadCatalog(currentUser);
-        Console.WriteLine("Catalogue lu.");
         
         var filesNames = catalog.Select(o => o.FileName).ToArray();
         var filesSize = catalog.Select(o => o.Size).ToArray();
         
-        Console.WriteLine(filesNames.ToString());
-        
-        return Task.FromResult(DispatcherProtocol.BuildCatalogue(filesNames, filesSize));
+        return Task.FromResult(_protocol.BuildCatalogue(filesNames, filesSize));
     }
 
     private Task<string> AnalyseTaskClient(TaskItem task)

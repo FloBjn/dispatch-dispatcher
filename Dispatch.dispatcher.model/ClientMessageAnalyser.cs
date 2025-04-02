@@ -11,6 +11,8 @@ public class ClientMessageAnalyser
     private readonly IUserManager _userManager;
     private readonly IFileManager _fileManager;
     private readonly ContainerManager _containerManager;
+    
+    private readonly Protocol _protocol = Protocol.GetInstance();
 
     public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager, ContainerManager containerManager)
     {
@@ -38,7 +40,7 @@ public class ClientMessageAnalyser
                 activeClient.CurrentFile.HashFileName = hashFileName;
                 activeClient.CurrentFile.HashFileContent = hashFileContent;
 
-                string commandHeader = DispatcherProtocol.BuildPost(
+                string commandHeader = _protocol.BuildPost(
                     hashFileName,
                     activeClient.CurrentFile.EncryptedContent.Length,
                     hashFileContent
@@ -72,7 +74,7 @@ public class ClientMessageAnalyser
         // Étape 2 : Si ce n’est pas du contenu de fichier, traiter comme texte
         var message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-        if (DispatcherProtocol.ParseUpload(message) is (string fileName, int fileSize))
+        if (_protocol.ParseUpload(message) is (string fileName, int fileSize))
         {
             var fullUser = _userManager.GetUserByUsername(activeClient.Username);
             if (fullUser == null)
@@ -92,14 +94,36 @@ public class ClientMessageAnalyser
             return null;
         }
 
-        if (DispatcherProtocol.ParseDownload(message) is string downloadFile)
+        if (_protocol.ParseDownload(message) is string downloadFile)
         {
             return new TaskItem(TaskItem.TaskType.Receive, TaskItem.TaskStatus.InProgress, downloadFile, "GET",
                 activeClient.Username,
                 new List<string>());
+            var userWithFiles = _fileManager.GetFileByName(downloadFile);
+            var file = userWithFiles.Files.Find(file => file.FileName == downloadFile);
+
+            if (file == null)
+            {
+                throw new Exception("File non trouvé");
+            }
+            
+            var hasher = new FileHasher();
+            string hashFileName = hasher.HashFileName(file.FileName);
+            
+            // TODO: Vérifier que l'utilisateur bien le droit de récupérer ce fichier (qu'il lui appartient)
+            
+            // TODO: Récupérer les containers concernés
+            List<string> containersId = file.Containers;
+            
+            // TODO: Construire la commande GET
+            string getCommand = _protocol.BuildGet(hashFileName);
+            
+            // TODO: Retourner la tâche
+            return new TaskItem(TaskItem.TaskType.Receive, downloadFile, getCommand, activeClient.Username,
+                containersId);
         }
 
-        if (DispatcherProtocol.ParsePurge(message) is string purgeFile)
+        if (_protocol.ParsePurge(message) is string purgeFile)
         {
             return new TaskItem(TaskItem.TaskType.Delete, TaskItem.TaskStatus.InProgress, purgeFile, "DELETE", activeClient.Username,
                 new List<string>());

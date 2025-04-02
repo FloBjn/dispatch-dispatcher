@@ -15,6 +15,8 @@ public class MulticastListener
     private readonly string _networkInterfaceName;
     private readonly ContainerManager _containerManager;
     private readonly TcpContainer _tcpContainer;
+    
+    private readonly Protocol _protocol = Protocol.GetInstance();
 
     public MulticastListener(Config config, ContainerManager containerManager, TcpContainer tcpContainer)
     {
@@ -76,7 +78,7 @@ public class MulticastListener
                     if (OnMessageContainerReceived != null)
                         await OnMessageContainerReceived.Invoke(message);
 
-                    if (DispatcherProtocol.ParseAlive(message) is (string containerName, int tcpPort))
+                    if (_protocol.ParseAlive(message) is (string containerName, int tcpPort))
                     {
                         string containerIp = result.RemoteEndPoint.Address.ToString();
                         Console.WriteLine($"Nouveau Container détecté : {containerName} ({containerIp}:{tcpPort})");

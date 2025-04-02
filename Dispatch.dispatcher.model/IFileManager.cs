@@ -3,5 +3,6 @@
 public interface IFileManager
 {
     public void SaveFile(TaskItem task);
-    public void Encrypte(OurFile ourFile, byte[] content); 
+    public void Encrypte(OurFile ourFile, byte[] content);
+    UserWithFiles GetFileByName(string downloadFile);
 }
