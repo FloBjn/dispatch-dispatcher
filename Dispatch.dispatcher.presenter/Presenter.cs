@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Dispatch.dispatcher.model;
+﻿using Dispatch.dispatcher.model;
 
 namespace Dispatch.dispatcher.presenter;
 

@@ -17,7 +17,6 @@ public class FileCatalogManager : IFileCatalogManager
 
     public List<StoredFile> LoadCatalog(string connectedUser)
     {
-        Console.WriteLine("Lecture du fichier de configuration pour les fichiers de l'utilisateur connecté...");
         try
         {
             // Charger la configuration actuelle
@@ -31,9 +30,6 @@ public class FileCatalogManager : IFileCatalogManager
             }
             
             var userFilesCatalog = userWithFiles.Files;
-
-            Console.WriteLine($"Fichier de configuration lu avec succès pour l'utilisateur {connectedUser} !");
-            
             return userFilesCatalog;
         }
         catch (Exception ex)

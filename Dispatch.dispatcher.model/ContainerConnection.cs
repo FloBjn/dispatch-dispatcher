@@ -8,7 +8,6 @@ namespace Dispatch.dispatcher.model
         private readonly string _ip;
         private readonly int _port;
         private readonly BlockingCollection<TaskItem> _taskQueue = new();
-        private readonly Thread _thread;
 
         public ContainerConnection(string name, string ip, int port)
         {
@@ -16,11 +15,11 @@ namespace Dispatch.dispatcher.model
             _ip = ip;
             _port = port;
 
-            _thread = new Thread(ProcessTasks)
+            var thread = new Thread(ProcessTasks)
             {
                 IsBackground = true
             };
-            _thread.Start();
+            thread.Start();
         }
 
         public void EnqueueTask(TaskItem task)

@@ -60,18 +60,4 @@ public class FileManager(FileEncryptor encryptor) : IFileManager
 
         return file;
     }
-
-
-    /// <summary>
-    /// Méthode permettant de formater un fichier en JSON
-    /// </summary>
-    /// <param name="ourFile"></param>
-    /// <returns></returns>
-    private string ToJson(OurFile ourFile)
-    {
-        return JsonSerializer.Serialize(ourFile, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        });
-    }
 }

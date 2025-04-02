@@ -7,16 +7,14 @@ public class FileHasher
 {
     public (string hashFileName, string hashFileContent) HashFile(OurFile file)
     {
-        Console.WriteLine("Hashage du fichier en cours ...");
 
-        string hashFileName = ComputeSha384Hex(Encoding.UTF8.GetBytes(file.FileName));
+        string composite = $"{file.User.Username}_{file.FileName}";
+        string hashFileName = ComputeSha384Hex(Encoding.UTF8.GetBytes(composite));
         string hashFileContent = ComputeSha384Hex(file.EncryptedContent);
-
-        Console.WriteLine($"hashFilename = {hashFileName}");
-        Console.WriteLine($"hashFileContent = {hashFileContent}");
 
         return (hashFileName, hashFileContent);
     }
+
 
     private string ComputeSha384Hex(byte[] data)
     {

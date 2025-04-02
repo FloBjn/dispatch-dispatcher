@@ -23,7 +23,6 @@ public class TaskDispatcher : ITaskDispatcher
             {
                 case TaskItem.TaskType.Send:
                     result = HandleUpload(task);
-                    Console.WriteLine("CACA" + result);
                     task.Status = result == "POST_OK"
                         ? TaskItem.TaskStatus.Completed
                         : TaskItem.TaskStatus.Error;

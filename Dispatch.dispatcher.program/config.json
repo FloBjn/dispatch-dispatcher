@@ -18,16 +18,15 @@
         {
           "FileName": "fichier01.txt",
           "Size": 20,
-          "Containers": ["container_1"]
+          "Containers": ["container_1"],
         },
         {
           "FileName": "fichier02.txt",
           "Size": 30,
-          "Containers": ["container_1"]
+          "Containers": ["container_1"],
         }
       ]
     },
-
     {
       "User": {
         "Username": "ouioui",
@@ -38,12 +37,12 @@
         {
           "FileName": "fichier01.txt",
           "Size": 20,
-          "Containers": ["container_1"]
+          "Containers": ["container_1"],
         },
         {
           "FileName": "fichier02.txt",
           "Size": 30,
-          "Containers": ["container_1"]
+          "Containers": ["container_1"],
         }
       ]
     }
