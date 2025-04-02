@@ -87,7 +87,7 @@ public class ClientMessageAnalyser
             activeClient.AwaitingUploadContent = true;
 
             Console.WriteLine(
-                $"📝 Requête d'UPLOAD reçue pour {fileName} ({fileSize} octets). En attente de contenu...");
+                $"Requête d'UPLOAD reçue pour {fileName} ({fileSize} octets). En attente de contenu...");
             return null;
         }
 

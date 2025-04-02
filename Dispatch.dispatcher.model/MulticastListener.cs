@@ -20,7 +20,7 @@ public class MulticastListener
     {
         _multicastAdr = config.MulticastAddress;
         _multicastPort = config.MulticastPort;
-        _networkInterfaceName = config.NetworkInterface; 
+        _networkInterfaceName = config.NetworkInterface;
         _containerManager = containerManager;
         _tcpContainer = tcpContainer;
     }
@@ -34,36 +34,36 @@ public class MulticastListener
     {
         Thread multicastThread = new Thread(async () =>
         {
-            using UdpClient udpClient = new UdpClient();
+            using UdpClient udpClient = new UdpClient
+            {
+                ExclusiveAddressUse = false
+            };
 
-            udpClient.ExclusiveAddressUse = false;
-
-            // Lier le socket au port multicast
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, _multicastPort);
             udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             udpClient.Client.Bind(localEndPoint);
 
-            foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
+            var selectedNic = NetworkInterface.GetAllNetworkInterfaces()
+                .FirstOrDefault(n => n.Name == _networkInterfaceName && 
+                                     n.OperationalStatus == OperationalStatus.Up && 
+                                     n.NetworkInterfaceType != NetworkInterfaceType.Loopback);
+
+            if (selectedNic == null)
             {
-                if (nic.OperationalStatus != OperationalStatus.Up ||
-                    nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
-                    continue;
-
-                var ip = GetLocalIPAddress(nic);
-                if (ip == null) continue;
-
-                try
-                {
-                    udpClient.JoinMulticastGroup(IPAddress.Parse(_multicastAdr), ip);
-                    Console.WriteLine($"Interface {nic.Name} ({ip}) rejointe au groupe multicast.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Impossible de joindre le groupe multicast via {nic.Name} ({ip}) : {ex.Message}");
-                }
+                Console.WriteLine($"Interface réseau non trouvée : {_networkInterfaceName}");
+                return;
             }
 
-           
+            var localIp = GetLocalIPAddress(selectedNic);
+            if (localIp == null)
+            {
+                Console.WriteLine($"Impossible d'obtenir l'adresse IP de l'interface {_networkInterfaceName}");
+                return;
+            }
+
+            udpClient.JoinMulticastGroup(IPAddress.Parse(_multicastAdr), localIp);
+            Console.WriteLine($"Interface {_networkInterfaceName} ({localIp}) rejointe au groupe multicast.");
+
             Console.WriteLine($"Écoute des Containers sur {_multicastAdr}:{_multicastPort} via {_networkInterfaceName}...");
 
             while (true)
@@ -71,14 +71,10 @@ public class MulticastListener
                 try
                 {
                     UdpReceiveResult result = await udpClient.ReceiveAsync();
-                    
                     string message = Encoding.UTF8.GetString(result.Buffer);
-                    
-                    if (OnMessageContainerReceived != null)
-                    {
-                        await OnMessageContainerReceived.Invoke(message);
-                    }
 
+                    if (OnMessageContainerReceived != null)
+                        await OnMessageContainerReceived.Invoke(message);
 
                     if (DispatcherProtocol.ParseAlive(message) is (string containerName, int tcpPort))
                     {
@@ -86,10 +82,8 @@ public class MulticastListener
                         Console.WriteLine($"Nouveau Container détecté : {containerName} ({containerIp}:{tcpPort})");
 
                         _containerManager.AddOrUpdateContainer(containerName, containerIp, tcpPort);
-
                         _tcpContainer.AddOrUpdateConnection(containerName, containerIp, tcpPort);
                     }
-
                     else
                     {
                         Console.WriteLine($"Message ignoré (format invalide) : {message}");
@@ -104,12 +98,10 @@ public class MulticastListener
         {
             IsBackground = true
         };
+
         multicastThread.Start();
     }
 
-    /// <summary>
-    /// 🔍 Récupère l'adresse IP locale associée à une interface réseau.
-    /// </summary>
     private static IPAddress? GetLocalIPAddress(NetworkInterface nic)
     {
         return nic.GetIPProperties().UnicastAddresses

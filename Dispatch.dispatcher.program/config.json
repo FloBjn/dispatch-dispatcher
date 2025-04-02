@@ -1,29 +1,49 @@
 ﻿{
-  "multicastAddress": "224.123.123.123",
-  "multicastPort": 50204,
-  "unicastPort": 12345,
-  "networkInterface": "Wi-Fi",
-  "tls": true,
-  "workingFolderPath": "C:\\TEMP\\DISPATCHER",
+  "MulticastAddress": "224.123.123.123",
+  "MulticastPort": 50204,
+  "UnicastPort": 12345,
+  "NetworkInterface": "Wi-Fi",
+  "Tls": true,
+  "WorkingFolderPath": "C:\\TEMP\\DISPATCHER",
   "CertificatePath": "certificat/labs25.swi.ovh.p12",
   "CertificatePassword": "labo2025",
-  "users": [
+  "Users": [
     {
-      "user": {
-        "username": "louis",
-        "hashpass": "755e3d3e6750d92efca34a94cdbd4f27f28a9dffe326cc669c9ae9b52694f20485075636655a1e4a41462f4867769d32",
-        "aesKey": "lt+7ZZGToz7kTnQgYqSe1bDQaO21QHdMuztPxDiAZtY="
+      "User": {
+        "Username": "louis",
+        "PasswordHash": "755e3d3e6750d92efca34a94cdbd4f27f28a9dffe326cc669c9ae9b52694f20485075636655a1e4a41462f4867769d32",
+        "AesKey": "lt+7ZZGToz7kTnQgYqSe1bDQaO21QHdMuztPxDiAZtY="
       },
-      "files": [
+      "Files": [
         {
-          "nomfichier": "fichier01.txt",
-          "taille": 20,
-          "containers": ["container_1"]
+          "FileName": "fichier01.txt",
+          "Size": 20,
+          "Containers": ["container_1"]
         },
         {
-          "nomfichier": "fichier02.txt",
-          "taille": 30,
-          "containers": ["container_1"]
+          "FileName": "fichier02.txt",
+          "Size": 30,
+          "Containers": ["container_1"]
+        }
+      ]
+    },
+
+    {
+      "User": {
+        "Username": "ouioui",
+        "PasswordHash": "68308ed375ecac1b1df1f88565919e4f599824e965ba59ae8d8af65604a96ca184600b638ab22311e3a3db60d4f5ab11",
+        "AesKey": "qby8J0Gqbae2RYyhAJu/VFBSYI7gdZOqvr1Ow57Iu2M="
+      },
+      "Files": [
+        {
+          "FileName": "fichier01.txt",
+          "Size": 20,
+          "Containers": ["container_1"]
+        },
+        {
+          "FileName": "fichier02.txt",
+          "Size": 30,
+          "Containers": ["container_1"]
         }
       ]
     }
