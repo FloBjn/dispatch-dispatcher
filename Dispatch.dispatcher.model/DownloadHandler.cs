@@ -2,14 +2,14 @@
 
 namespace Dispatch.dispatcher.model;
 
-public class DownloadHandler(IFileManager fileManager, IUserManager userManager)
+public class DownloadHandler(IFileManager fileManager)
 {
     private readonly Protocol _protocol = Protocol.GetInstance();
     private readonly IFileManager _fileManager = fileManager;
-    private readonly IUserManager _userManager = userManager;
 
     public string HandleDownload(TaskItem taskItem)
     {
+        Console.WriteLine("DownloadHandler.HandleDownload");
         string response;
         // TODO : récupéré les outils de décryptage
         var userWithFiles = _fileManager.GetFileByName(taskItem.UserName, taskItem.FileName);
@@ -21,12 +21,13 @@ public class DownloadHandler(IFileManager fileManager, IUserManager userManager)
         var resultLines = taskItem.Result.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         if (resultLines.Length < 2)
         {
+            Console.WriteLine("coucou1");
             return _protocol.BuildDownloadError();
         }
         
         var metadata = resultLines[0];
-        var encryptedContentHex = resultLines[1];
-
+        var encryptedContentHex = resultLines[1].Trim();
+        Console.WriteLine(encryptedContentHex);
         // Convertir le contenu chiffré de l'hexadécimal au binaire
         byte[] encryptedContent;
         try
@@ -35,6 +36,7 @@ public class DownloadHandler(IFileManager fileManager, IUserManager userManager)
         }
         catch (FormatException)
         {
+            Console.WriteLine("coucou2");
             return _protocol.BuildDownloadError();
         }
         
@@ -47,6 +49,7 @@ public class DownloadHandler(IFileManager fileManager, IUserManager userManager)
         }
         catch (CryptographicException)
         {
+            Console.WriteLine("coucou3");
             return _protocol.BuildDownloadError();
         }       
 

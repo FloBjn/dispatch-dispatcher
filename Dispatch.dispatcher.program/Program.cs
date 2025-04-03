@@ -46,7 +46,7 @@ public class Program
         TaskManager taskManager = new TaskManager(dispatcher);
         
         // Serveur TCP qui écoute les clients
-        var server = new TcpServer(config, analyser, new DownloadHandler(fileManager, new UserManager(config)));
+        var server = new TcpServer(config, analyser, new DownloadHandler(fileManager));
         
         MulticastListener multicastListener = new MulticastListener(config, containerManager, tcpContainer);
         

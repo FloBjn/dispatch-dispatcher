@@ -127,8 +127,8 @@ public class TcpServer
                                     "POST_ERROR" => _protocol.BuildSendError(),  
                                     "DELETE_OK"  => _protocol.BuildPurgeOk(),   
                                     "DELETE_ERROR" => _protocol.BuildPurgeError(),
-                                    "DOWNLOAD_OK" => _downloadHandler.HandleDownload(taskItem),
-                                    "DOWNLOAD_ERROR" => _protocol.BuildDownloadError(),
+                                    "GET_OK" => _downloadHandler.HandleDownload(taskItem),
+                                    "GET_ERROR" => _protocol.BuildDownloadError(),
                                     _            => "ERROR"                      
                                 };
                             }
