@@ -57,4 +57,5 @@ public class TaskItem(
     
     public TaskCompletionSource<string>? CompletionSource { get; set; }
     public int FileSize { get; set; }
+    public OurFile OurFile { get; set; }
 }

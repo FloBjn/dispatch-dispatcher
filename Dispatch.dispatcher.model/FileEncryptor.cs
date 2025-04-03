@@ -22,13 +22,14 @@ public class FileEncryptor
         return (encryptedText, tag);
     }
 
-    public string DecryptAesgcm(byte[] encryptedText, byte[] tag, byte[] aesKey, byte[] iv, byte[] aad)
+    public byte[] DecryptAesgcm(byte[] encryptedText, byte[] tag, byte[] aesKey, byte[] iv, byte[] aad)
     {
         using var aesGcm = new AesGcm(aesKey);
-        
+    
         byte[] decryptedBytes = new byte[encryptedText.Length];
         aesGcm.Decrypt(iv, encryptedText, tag, decryptedBytes, aad);
-        
-        return System.Text.Encoding.UTF8.GetString(decryptedBytes);
+    
+        return decryptedBytes;
     }
+
 }

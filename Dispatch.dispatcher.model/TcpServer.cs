@@ -14,6 +14,7 @@ public class TcpServer
     private bool _isRunning;
     private readonly ClientMessageAnalyser _messageAnalyser;
     private readonly List<Client> _activeClients = new();
+    private readonly DownloadHandler _downloadHandler;
     
     private const int ByteBufferSize = 1024;
     
@@ -27,11 +28,12 @@ public class TcpServer
 
     public event Func<string, Task<string>>? OnCatalogReceived;
 
-    public TcpServer(Config config, ClientMessageAnalyser messageAnalyser)
+    public TcpServer(Config config, ClientMessageAnalyser messageAnalyser, DownloadHandler downloadHandler)
     {
         _config = config;
         _serverCertificate = new X509Certificate2(config.CertificatePath, config.CertificatePassword);
         _messageAnalyser = messageAnalyser;
+        _downloadHandler = downloadHandler;
     }
 
     public async Task StartAsync()
@@ -119,13 +121,14 @@ public class TcpServer
                                 await OnTaskReceived.Invoke(taskItem);
 
                                 var containerResult = await taskItem.CompletionSource.Task;
-
                                 response = containerResult switch
                                 {
                                     "POST_OK"    => _protocol.BuildSendOk(),     
                                     "POST_ERROR" => _protocol.BuildSendError(),  
                                     "DELETE_OK"  => _protocol.BuildPurgeOk(),   
                                     "DELETE_ERROR" => _protocol.BuildPurgeError(),
+                                    "DOWNLOAD_OK" => _downloadHandler.HandleDownload(taskItem),
+                                    "DOWNLOAD_ERROR" => _protocol.BuildDownloadError(),
                                     _            => "ERROR"                      
                                 };
                             }
