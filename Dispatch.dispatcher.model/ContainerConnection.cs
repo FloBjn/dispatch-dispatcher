@@ -50,8 +50,14 @@ namespace Dispatch.dispatcher.model
                     string response = connection.ReadLine();
                     task.Result = response.Trim(); 
                     // On set le résultat de la tâche
-                    Console.WriteLine(task.Result);
-                    task.CompletionSource?.SetResult(task.Result);
+                    if (!string.IsNullOrEmpty(task.Result))
+                    {
+                        // Divise task.Result en deux parties au maximum en utilisant l'espace comme séparateur
+                        var parts = task.Result.Split(new[] { ' ' }, 2);
+
+                        // Définit le résultat de CompletionSource avec la première partie
+                        task.CompletionSource?.SetResult(parts[0]);
+                    }
 
                     connection.Disconnect();
                 }

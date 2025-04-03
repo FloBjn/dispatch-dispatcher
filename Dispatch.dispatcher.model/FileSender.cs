@@ -39,7 +39,6 @@
             {
                 Thread.Sleep(10);
             }
-            Console.WriteLine("Result : " + task.Result);
             return task.Result;
         }
 
