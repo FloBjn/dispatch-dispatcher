@@ -72,7 +72,6 @@ public class Presenter
 
     private Task<string> AnalyseTaskClient(TaskItem task)
     {
-        _view.DisplayMainThreadMessage($"Tâche reçue : {task.Type} - {task.FileName}");
         var taskResult = _taskManager.AddTask(task);
         _view.DisplayMainThreadMessage($"Tâche ajoutée à la file : {task.Type} - {task.FileName}");
         return taskResult;

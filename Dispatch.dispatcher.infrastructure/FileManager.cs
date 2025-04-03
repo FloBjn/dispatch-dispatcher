@@ -46,18 +46,55 @@ public class FileManager(FileEncryptor encryptor) : IFileManager
         _encryptor.Encrypte(ourFile, content);
     }
 
-    public UserWithFiles GetFileByName(string downloadFile)
+    public UserWithFiles GetFileByName(string username, string downloadFile)
     {
         var config = Config.Load("config.json");
-        
-        // Parcourir tous les user pour voir si ils ont dowloadFile
-        var file = config.Users.Find(files => files.Files.Any(f => f.FileName == downloadFile));
+
+        // Trouver l'utilisateur correspondant au nom d'utilisateur fourni
+        var userWithFiles = config.Users.Find(u => u.User.Username == username);
+
+        if (userWithFiles == null)
+        {
+            throw new Exception($"Utilisateur {username} non trouvé dans la configuration !");
+        }
+
+        // Rechercher le fichier parmi les fichiers de cet utilisateur
+        var file = userWithFiles.Files.Find(f => f.FileName == downloadFile);
 
         if (file == null)
         {
-            throw new Exception("Impossible de trouver le fichier");
+            throw new Exception($"Fichier {downloadFile} non trouvé pour l'utilisateur {username}.");
         }
 
-        return file;
+        return userWithFiles;
     }
+
+    public void DeleteFile(TaskItem task)
+    {
+        try
+        {
+            var config = Config.Load("config.json");
+
+            var userWithFiles = config.Users.Find(u => u.User.Username == task.UserName);
+            if (userWithFiles == null)
+            {
+                throw new Exception($"Utilisateur {task.UserName} non trouvé dans la configuration !");
+            }
+
+            var fileToRemove = userWithFiles.Files.FirstOrDefault(f => f.FileName == task.FileName);
+            if (fileToRemove == null)
+            {
+                throw new Exception($"Fichier {task.FileName} introuvable pour l'utilisateur {task.UserName}.");
+            }
+
+            userWithFiles.Files.Remove(fileToRemove);
+
+            config.Save("config.json");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Erreur dans DeleteFile(TaskItem) : {ex.Message}");
+        }
+    }
+
 }

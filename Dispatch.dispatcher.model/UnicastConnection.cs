@@ -27,12 +27,13 @@ namespace Dispatch.dispatcher.model
             byte[] buffer = new byte[1000];
             int bytesRead = _stream.Read(buffer, 0, buffer.Length);
             string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+            Console.WriteLine("Reception de " + bytesRead + " octets");
             return message;
         }
 
         public void SendBytes(byte[] data)
         {
-            
+            Console.WriteLine("Envoi de " + data.Length + " octets");
             _stream.Write(data, 0, data.Length);
             _stream.Flush();
         }

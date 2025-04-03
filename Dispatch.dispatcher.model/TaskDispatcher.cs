@@ -5,8 +5,6 @@ public class TaskDispatcher : ITaskDispatcher
     private readonly IFileManager _fileManager;
     private readonly FileSender _fileSender;
     
-    private readonly Protocol _protocol = Protocol.GetInstance();
-    
     public TaskDispatcher(IFileManager fileManager, FileSender fileSender)
     {
         _fileManager = fileManager;
@@ -23,9 +21,15 @@ public class TaskDispatcher : ITaskDispatcher
             {
                 case TaskItem.TaskType.Send:
                     result = HandleUpload(task);
-                    task.Status = result == "POST_OK"
-                        ? TaskItem.TaskStatus.Completed
-                        : TaskItem.TaskStatus.Error;
+                    if (result == "POST_OK")
+                    {
+                        task.Status = TaskItem.TaskStatus.Completed;
+                        _fileManager.SaveFile(task);
+                    }
+                    else
+                    {
+                        task.Status = TaskItem.TaskStatus.Error;
+                    }
                     break;
 
                 case TaskItem.TaskType.Receive:
@@ -35,10 +39,26 @@ public class TaskDispatcher : ITaskDispatcher
                     break;
 
                 case TaskItem.TaskType.Delete:
-                    HandleDelete(task); // TODO: compléter
-                    task.Status = TaskItem.TaskStatus.Completed;
-                    result = "DELETE_OK"; // temporaire
-                    break;
+                    // on demande la suppression au container
+                    HandleDelete(task);
+
+                    // on attend la confirmation
+                    if (task.CompletionSource != null)
+                    {
+                        var deleteResult = task.CompletionSource.Task.Result;
+                        // on modifie le statut de la tâche
+                        if (deleteResult == "DELETE_OK")
+                        {
+                            task.Status = TaskItem.TaskStatus.Completed;
+                            _fileManager.DeleteFile(task);
+                        }
+                        else
+                        {
+                            task.Status = TaskItem.TaskStatus.Error;
+                        }
+                    }
+                    return;
+
 
                 default:
                     task.Status = TaskItem.TaskStatus.Error;
@@ -57,11 +77,9 @@ public class TaskDispatcher : ITaskDispatcher
     }
 
 
-
     private string HandleUpload(TaskItem task)
     {
         string response = _fileSender.SendFile(task);
-        _fileManager.SaveFile(task);
         return response;
     }
 
@@ -73,6 +91,6 @@ public class TaskDispatcher : ITaskDispatcher
 
     private void HandleDelete(TaskItem task)
     {
-        // TODO : Envoyer une commande DELETE au container
+        _fileSender.SendDeleteToEach(task);
     }
 }

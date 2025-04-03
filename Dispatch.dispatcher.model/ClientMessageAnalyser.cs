@@ -94,7 +94,7 @@ public class ClientMessageAnalyser
 
         if (_protocol.ParseDownload(message) is string downloadFile)
         {
-            var userWithFiles = _fileManager.GetFileByName(downloadFile);
+            var userWithFiles = _fileManager.GetFileByName(activeClient.Username, downloadFile);
             var file = userWithFiles.Files.Find(file => file.FileName == downloadFile);
 
             if (file == null)
@@ -120,9 +120,29 @@ public class ClientMessageAnalyser
 
         if (_protocol.ParsePurge(message) is string purgeFile)
         {
-            return new TaskItem(TaskItem.TaskType.Delete, TaskItem.TaskStatus.InProgress, purgeFile, "DELETE", activeClient.Username,
-                new List<string>());
+            var userWithFiles = _fileManager.GetFileByName(activeClient.Username, purgeFile);
+            var file = userWithFiles.Files.Find(f => f.FileName == purgeFile);
+
+            if (file == null)
+            {
+                throw new Exception("Fichier introuvable ou non autorisé.");
+            }
+
+            var hasher = new FileHasher();
+            string hashFileName = hasher.HashFileName(activeClient.Username + "_" + purgeFile); 
+            
+            string deleteCommand = _protocol.BuildDelete(hashFileName);
+
+            return new TaskItem(
+                TaskItem.TaskType.Delete,
+                TaskItem.TaskStatus.InProgress,
+                purgeFile,
+                deleteCommand,
+                activeClient.Username,
+                file.Containers
+            );
         }
+
 
         throw new NotImplementedException("Commande non reconnue ou non implémentée : " + message);
     }

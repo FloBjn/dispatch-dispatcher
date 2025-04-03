@@ -12,6 +12,7 @@
         {
             foreach (var conn in _connections.Values)
             {
+                Console.WriteLine($"Envoi de la tâche {task.Command} au container {conn.ToString()}");
                 conn.EnqueueTask(task);
             }
         }
@@ -33,6 +34,11 @@
                     connection.EnqueueTask(task);
                 }
             }
+        }
+
+        public bool TryGetConnection(string containerId, out ContainerConnection connection)
+        {
+            return _connections.TryGetValue(containerId, out connection);
         }
     }
 }
