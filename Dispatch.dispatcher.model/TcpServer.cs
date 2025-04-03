@@ -15,6 +15,8 @@ public class TcpServer
     private readonly ClientMessageAnalyser _messageAnalyser;
     private readonly List<Client> _activeClients = new();
     
+    private const int ByteBufferSize = 1024;
+    
     private readonly Protocol _protocol = Protocol.GetInstance();
 
     public event Func<TaskItem, Task<string>>? OnTaskReceived;
@@ -63,7 +65,7 @@ public class TcpServer
 
                 while (tcpClient.Connected)
                 {
-                    byte[] buffer = new byte[1024];
+                    byte[] buffer = new byte[ByteBufferSize];
                     int bytesRead = await sslStream.ReadAsync(buffer, 0, buffer.Length);
 
                     if (bytesRead == 0)
