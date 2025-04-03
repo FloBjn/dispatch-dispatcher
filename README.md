@@ -29,9 +29,6 @@
 | sha2         | 0.11.0-pre.5|
 
 
-### Extensions
-- 
-
 ## Compilation et exécution
 
 ### .NET
