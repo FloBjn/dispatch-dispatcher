@@ -19,7 +19,7 @@ namespace Dispatch.dispatcher.model
         private const string Username = $"(?<username>{LetterDigit}{{5,20}})";
         private const string Password = $"(?<password>{CarPass}{{5,50}})";
         private const string Filename = $"(?<filename>{CarPass}{{1,20}})";
-        private const string Domain = $"(?<domain>{LetterDigit}{{5,20}}\\.)";
+        private const string Domain = $"(?<domain>{LetterDigit}{{5,20}})";
         private const string Port = $"(?<port>[0-9]{{1,5}})";
         private const string Size = $"(?<size>[0-9]{{1,10}})";
         private const string HashFilename = $"(?<hash_filename>{Hash})";
@@ -76,6 +76,14 @@ namespace Dispatch.dispatcher.model
                 throw new ArgumentException("Format invalide pour GET.");
 
             return $"GET {hashFilename}\r\n";
+        }
+        
+        public string BuildDelete(string hashFileName)
+        {
+            if (!IsValid(hashFileName, HashFilename))
+                throw new ArgumentException("Format invalide pour DELETE.");
+
+            return $"DELETE {hashFileName}\r\n";
         }
 
         // Méthodes de parsing des messages
@@ -141,6 +149,17 @@ namespace Dispatch.dispatcher.model
         public string BuildSendError()
         {
             return "UPLOAD_ERROR\r\n";
+        }
+
+
+        public string BuildPurgeOk()
+        {
+            return "PURGE_OK\r\n";
+        }
+
+        public string BuildPurgeError()
+        {
+            return "PURGE_ERROR\r\n";
         }
     }
 }

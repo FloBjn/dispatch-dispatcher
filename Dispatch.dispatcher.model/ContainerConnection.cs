@@ -30,16 +30,18 @@ namespace Dispatch.dispatcher.model
         private void ProcessTasks()
         {
             var connection = new UnicastConnection();
-
+            // Pour chaque tâche de la file d'attente
             foreach (var task in _taskQueue.GetConsumingEnumerable())
             {
                 try
                 {
                     connection.Connect(_ip, _port);
 
+                    // Envoi du header de la tâche
                     byte[] header = System.Text.Encoding.UTF8.GetBytes(task.Command );
                     connection.SendBytes(header);
-
+                    
+                    // Envoi du payload de la tâche
                     if (task.BinaryPayload.Length > 0)
                     {
                         connection.SendBytes(task.BinaryPayload);
@@ -47,7 +49,9 @@ namespace Dispatch.dispatcher.model
                     
                     string response = connection.ReadLine();
                     task.Result = response.Trim(); 
-                    
+                    // On set le résultat de la tâche
+                    task.CompletionSource?.SetResult(task.Result);
+
                     connection.Disconnect();
                 }
                 catch (Exception ex)

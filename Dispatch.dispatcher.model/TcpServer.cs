@@ -122,6 +122,8 @@ public class TcpServer
                                 {
                                     "POST_OK"    => _protocol.BuildSendOk(),     
                                     "POST_ERROR" => _protocol.BuildSendError(),  
+                                    "DELETE_OK"  => _protocol.BuildPurgeOk(),   
+                                    "DELETE_ERROR" => _protocol.BuildPurgeError(),
                                     _            => "ERROR"                      
                                 };
                             }

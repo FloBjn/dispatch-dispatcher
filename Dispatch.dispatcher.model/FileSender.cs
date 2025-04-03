@@ -33,5 +33,66 @@
             _tcpContainer.SendTaskAt(containerIds, task);
         }
 
+        public void SendDeleteToEach(TaskItem task)
+        {
+            // crée une liste de tâches asynchrones de suppression
+            var tasks = new List<Task<string>>();
+
+            foreach (var containerId in task.ContainerId)
+            {
+                // vérifie si le container est actif
+                if (_tcpContainer.TryGetConnection(containerId, out var connection))
+                {
+                    // crée une tâche de suppression
+                    var deleteTask = new TaskItem(
+                        TaskItem.TaskType.Delete,
+                        TaskItem.TaskStatus.InProgress,
+                        task.FileName,
+                        task.Command,
+                        task.UserName,
+                        new List<string> { containerId }
+                    )
+                    {
+                        CompletionSource =
+                            new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously)
+                    };
+                    // ajoute la tâche de suppression à la liste
+                    tasks.Add(deleteTask.CompletionSource.Task);
+                    // envoie la tâche de suppression au container
+                    connection.EnqueueTask(deleteTask);
+                }
+                else
+                {
+                    Console.WriteLine($"Aucune connexion trouvée pour le containerId : {containerId}");
+                }
+            }
+            
+            // Nouvelle tâche en arrière-plan pour attendre les résultats
+            Task.Run(async () =>
+            {
+                try
+                {
+                    // attend la fin de toutes les tâches de suppression
+                    var results = await Task.WhenAll(tasks);
+                    
+                    // verifie si toutes les tâches de suppression ont fonctionnées
+                    if (results.All(r => r == "DELETE_OK"))
+                    {
+                        task.CompletionSource?.SetResult("DELETE_OK");
+                        task.Status = TaskItem.TaskStatus.Completed;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Certaines tâches de suppression ont échoué.");
+                        task.CompletionSource?.SetResult("DELETE_ERROR");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erreur lors de l'attente des suppressions : {ex.Message}");
+                    task.CompletionSource?.SetResult("DELETE_ERROR");
+                }
+            });
+        }
     }
 }
