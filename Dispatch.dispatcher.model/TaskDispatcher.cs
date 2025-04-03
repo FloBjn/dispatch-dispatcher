@@ -37,12 +37,10 @@ public class TaskDispatcher : ITaskDispatcher
                     if (response != "")
                     {
                         task.Status = TaskItem.TaskStatus.Completed;
-                        result = "DOWNLOAD_OK"; // temporaire
                     }
                     else
                     {
                         task.Status = TaskItem.TaskStatus.Error;
-                        result = "DOWNLOAD_ERROR";
                     }
                     break;
 
@@ -57,7 +55,6 @@ public class TaskDispatcher : ITaskDispatcher
                         // on modifie le statut de la tâche
                         if (deleteResult == "DELETE_OK")
                         {
-                            task.Status = TaskItem.TaskStatus.Completed;
                             _fileManager.DeleteFile(task);
                         }
                         else
@@ -71,10 +68,9 @@ public class TaskDispatcher : ITaskDispatcher
                 default:
                     task.Status = TaskItem.TaskStatus.Error;
                     result = "UNKNOWN_TASK_TYPE";
+                    task.CompletionSource?.SetResult(result);
                     break;
             }
-
-            task.CompletionSource?.SetResult(result);
         }
         catch (Exception ex)
         {

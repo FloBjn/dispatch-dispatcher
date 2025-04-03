@@ -59,7 +59,8 @@ public class ClientMessageAnalyser
                 )
                 {
                     BinaryPayload = activeClient.CurrentFile.EncryptedContent,
-                    FileSize = activeClient.CurrentFile.EncryptedContent.Length
+                    FileSize = activeClient.CurrentFile.EncryptedContent.Length,
+                    OurFile = activeClient.CurrentFile
                 };
 
                 activeClient.AwaitingUploadContent = false;
@@ -103,7 +104,7 @@ public class ClientMessageAnalyser
             }
             
             var hasher = new FileHasher();
-            string hashFileName = hasher.HashFileName(file.FileName);
+            string hashFileName = hasher.HashFileName(activeClient.Username+ "_" + file.FileName);
             
             // TODO: Vérifier que l'utilisateur bien le droit de récupérer ce fichier (qu'il lui appartient)
             

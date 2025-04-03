@@ -28,6 +28,9 @@ public class FileManager(FileEncryptor encryptor) : IFileManager
             {
                 FileName = task.FileName, 
                 Size = task.FileSize,
+                Iv = task.OurFile.Iv,
+                Aad = task.OurFile.Aad,
+                Tag = task.OurFile.Tag,
                 Containers = task.ContainerId.ToList()
             });
 
@@ -96,5 +99,4 @@ public class FileManager(FileEncryptor encryptor) : IFileManager
             throw new Exception($"Erreur dans DeleteFile(TaskItem) : {ex.Message}");
         }
     }
-
 }
