@@ -154,11 +154,8 @@ public class TcpServer
                     }
 
                     if (!string.IsNullOrEmpty(response))
-                    {
-                        if (!response.Contains("DOWNLOAD_OK"))
-                        {
-                            await SendResponseAsync(sslStream, response);
-                        }
+                    { 
+                        await SendResponseAsync(sslStream, response);
                     }
                 }
             }

@@ -28,7 +28,6 @@ namespace Dispatch.dispatcher.model
     
             // Lire la première ligne (ex : GET_OK nomfichier taille hexadécimal...)
             string firstLine = reader.ReadLine();
-            Console.WriteLine("readLine header : " + firstLine);
 
             if (string.IsNullOrWhiteSpace(firstLine))
                 return "";
@@ -53,7 +52,6 @@ namespace Dispatch.dispatcher.model
 
                     string fullMessage = firstLine + "\r\n" + hexContentBuilder;
                     Console.WriteLine($"Reception totale : {fullMessage.Length} caractères");
-                    Console.WriteLine("fullmessage : "+ fullMessage);
                     return fullMessage;
                 }
             }
