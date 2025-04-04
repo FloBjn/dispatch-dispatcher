@@ -170,14 +170,7 @@ namespace Dispatch.dispatcher.model
 
         public string BuildDownloadOk(string fileName, int fileSize, byte[] fileContent)
         {
-            string header = $"DOWNLOAD_OK {fileName} {fileSize}{Eol}";
-            byte[] headerBytes = Encoding.UTF8.GetBytes(header);
-
-            byte[] responseBytes = new byte[headerBytes.Length + fileContent.Length];
-            Buffer.BlockCopy(headerBytes, 0, responseBytes, 0, headerBytes.Length);
-            Buffer.BlockCopy(fileContent, 0, responseBytes, headerBytes.Length, fileContent.Length);
-
-            return Encoding.UTF8.GetString(responseBytes);
+            return $"DOWNLOAD_OK {fileName} {fileSize}\r\n"; 
         }
     }
 }

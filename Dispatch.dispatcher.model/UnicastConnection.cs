@@ -24,13 +24,44 @@ namespace Dispatch.dispatcher.model
 
         public string ReadLine()
         {
-            byte[] buffer = new byte[1000];
-            int bytesRead = _stream.Read(buffer, 0, buffer.Length);
-            string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-            Console.WriteLine("readLine : " + message);
-            Console.WriteLine("Reception de " + bytesRead + " octets");
-            return message;
+            using var reader = new StreamReader(_stream, Encoding.UTF8, leaveOpen: true);
+    
+            // Lire la première ligne (ex : GET_OK nomfichier taille hexadécimal...)
+            string firstLine = reader.ReadLine();
+            Console.WriteLine("readLine header : " + firstLine);
+
+            if (string.IsNullOrWhiteSpace(firstLine))
+                return "";
+
+            // Cas GET_OK → extraire taille attendue
+            if (firstLine.StartsWith("GET_OK"))
+            {
+                var parts = firstLine.Split(' ');
+                if (parts.Length >= 4 && int.TryParse(parts[2], out int size))
+                {
+                    int expectedHexLength = size * 2; // chaque octet = 2 caractères hex
+
+                    // Lire le contenu hexadécimal (qui arrive après \r\n)
+                    StringBuilder hexContentBuilder = new();
+
+                    while (hexContentBuilder.Length < expectedHexLength)
+                    {
+                        string? line = reader.ReadLine();
+                        if (line == null) break;
+                        hexContentBuilder.Append(line.Trim());
+                    }
+
+                    string fullMessage = firstLine + "\r\n" + hexContentBuilder;
+                    Console.WriteLine($"Reception totale : {fullMessage.Length} caractères");
+                    Console.WriteLine("fullmessage : "+ fullMessage);
+                    return fullMessage;
+                }
+            }
+
+            // Cas normal : juste une ligne simple (ex: POST_OK, DELETE_OK)
+            return firstLine;
         }
+
 
         public void SendBytes(byte[] data)
         {

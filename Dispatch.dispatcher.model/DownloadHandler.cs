@@ -7,10 +7,11 @@ public class DownloadHandler(IFileManager fileManager)
     private readonly Protocol _protocol = Protocol.GetInstance();
     private readonly IFileManager _fileManager = fileManager;
 
-    public string HandleDownload(TaskItem taskItem)
+    public (string, byte[]) HandleDownload(TaskItem taskItem)
     {
         Console.WriteLine("DownloadHandler.HandleDownload");
-        string response;
+        byte[] response;
+        string header;
         // TODO : récupéré les outils de décryptage
         var userWithFiles = _fileManager.GetFileByName(taskItem.UserName, taskItem.FileName);
         var iv = userWithFiles.Files.Find(f => f.FileName == taskItem.FileName)?.Iv;
@@ -21,8 +22,7 @@ public class DownloadHandler(IFileManager fileManager)
         var resultLines = taskItem.Result.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
         if (resultLines.Length < 2)
         {
-            Console.WriteLine("coucou1");
-            return _protocol.BuildDownloadError();
+            return (null, null)!;
         }
         
         var metadata = resultLines[0];
@@ -36,8 +36,7 @@ public class DownloadHandler(IFileManager fileManager)
         }
         catch (FormatException)
         {
-            Console.WriteLine("coucou2");
-            return _protocol.BuildDownloadError();
+            return (null, null)!;
         }
         
         var fileEncryptor = new FileEncryptor();
@@ -49,12 +48,11 @@ public class DownloadHandler(IFileManager fileManager)
         }
         catch (CryptographicException)
         {
-            Console.WriteLine("coucou3");
-            return _protocol.BuildDownloadError();
+            return (null, null)!;
         }       
 
         // TODO : construire le download_ok
-        response = _protocol.BuildDownloadOk(taskItem.FileName, taskItem.FileSize, decryptedContent);
-        return response;
+        header = _protocol.BuildDownloadOk(taskItem.FileName, taskItem.FileSize, decryptedContent);
+        return (header, decryptedContent);
     }
 }
