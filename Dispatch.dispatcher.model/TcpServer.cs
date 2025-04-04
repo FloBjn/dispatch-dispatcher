@@ -15,9 +15,9 @@ public class TcpServer
     private readonly ClientMessageAnalyser _messageAnalyser;
     private readonly List<Client> _activeClients = new();
     private readonly DownloadHandler _downloadHandler;
-    
+
     private const int ByteBufferSize = 1024;
-    
+
     private readonly Protocol _protocol = Protocol.GetInstance();
 
     public event Func<TaskItem, Task<string>>? OnTaskReceived;
@@ -121,24 +121,44 @@ public class TcpServer
                                 await OnTaskReceived.Invoke(taskItem);
 
                                 var containerResult = await taskItem.CompletionSource.Task;
+                                byte[] responseByte;
+                                string headerByte;
+
+                                if (containerResult == "GET_OK")
+                                {
+                                    (headerByte, responseByte) = _downloadHandler.HandleDownload(taskItem);
+                                    if (responseByte == null)
+                                    {
+                                        response = _protocol.BuildDownloadError();
+                                        await SendResponseAsync(sslStream, response);
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        SendFileAsync(sslStream, headerByte, responseByte);
+                                        return;
+                                    }
+                                }
+
                                 response = containerResult switch
                                 {
-                                    "POST_OK"    => _protocol.BuildSendOk(),     
-                                    "POST_ERROR" => _protocol.BuildSendError(),  
-                                    "DELETE_OK"  => _protocol.BuildPurgeOk(),   
+                                    "POST_OK" => _protocol.BuildSendOk(),
+                                    "POST_ERROR" => _protocol.BuildSendError(),
+                                    "DELETE_OK" => _protocol.BuildPurgeOk(),
                                     "DELETE_ERROR" => _protocol.BuildPurgeError(),
-                                    "GET_OK" => _downloadHandler.HandleDownload(taskItem),
                                     "GET_ERROR" => _protocol.BuildDownloadError(),
-                                    _            => "ERROR"                      
+                                    _ => "ERROR"
                                 };
                             }
-
                         }
                     }
 
                     if (!string.IsNullOrEmpty(response))
                     {
-                        await SendResponseAsync(sslStream, response);
+                        if (!response.Contains("DOWNLOAD_OK"))
+                        {
+                            await SendResponseAsync(sslStream, response);
+                        }
                     }
                 }
             }
@@ -152,8 +172,16 @@ public class TcpServer
     private async Task SendResponseAsync(SslStream sslStream, string response)
     {
         byte[] responseBytes = Encoding.UTF8.GetBytes(response);
-        await sslStream.WriteAsync(responseBytes, 0, responseBytes.Length);
+        await sslStream.WriteAsync(responseBytes);
     }
+
+    private async Task SendFileAsync(SslStream sslStream, string header, byte[] response)
+    {
+        byte[] headerBytes = Encoding.UTF8.GetBytes(header);
+        await sslStream.WriteAsync(headerBytes);
+        await sslStream.WriteAsync(response);
+    }
+
 
     public void Stop()
     {
