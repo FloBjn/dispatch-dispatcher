@@ -9,7 +9,6 @@ public class DownloadHandler(IFileManager fileManager)
 
     public (string, byte[]) HandleDownload(TaskItem taskItem)
     {
-        Console.WriteLine("DownloadHandler.HandleDownload");
         byte[] response;
         string header;
         // TODO : récupéré les outils de décryptage
@@ -27,7 +26,6 @@ public class DownloadHandler(IFileManager fileManager)
         
         var metadata = resultLines[0];
         var encryptedContentHex = resultLines[1].Trim();
-        Console.WriteLine(encryptedContentHex);
         // Convertir le contenu chiffré de l'hexadécimal au binaire
         byte[] encryptedContent;
         try
