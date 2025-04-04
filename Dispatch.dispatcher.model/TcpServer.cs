@@ -68,10 +68,16 @@ public class TcpServer
                 while (tcpClient.Connected)
                 {
                     byte[] buffer = new byte[ByteBufferSize];
+                    
+                    Console.WriteLine("En attente d'un message du client...");
+                    
                     int bytesRead = await sslStream.ReadAsync(buffer, 0, buffer.Length);
+                    
+                    Console.WriteLine(bytesRead);
 
                     if (bytesRead == 0)
                     {
+                        Console.WriteLine("Connexion avec le client fermée.");
                         break;
                     }
 
@@ -131,24 +137,24 @@ public class TcpServer
                                     {
                                         response = _protocol.BuildDownloadError();
                                         await SendResponseAsync(sslStream, response);
-                                        return;
                                     }
                                     else
                                     {
                                         SendFileAsync(sslStream, headerByte, responseByte);
-                                        return;
                                     }
                                 }
-
-                                response = containerResult switch
+                                else
                                 {
-                                    "POST_OK" => _protocol.BuildSendOk(),
-                                    "POST_ERROR" => _protocol.BuildSendError(),
-                                    "DELETE_OK" => _protocol.BuildPurgeOk(),
-                                    "DELETE_ERROR" => _protocol.BuildPurgeError(),
-                                    "GET_ERROR" => _protocol.BuildDownloadError(),
-                                    _ => "ERROR"
-                                };
+                                    response = containerResult switch
+                                                                    {
+                                                                        "POST_OK" => _protocol.BuildSendOk(),
+                                                                        "POST_ERROR" => _protocol.BuildSendError(),
+                                                                        "DELETE_OK" => _protocol.BuildPurgeOk(),
+                                                                        "DELETE_ERROR" => _protocol.BuildPurgeError(),
+                                                                        "GET_ERROR" => _protocol.BuildDownloadError(),
+                                                                        _ => "ERROR"
+                                                                    };
+                                }
                             }
                         }
                     }
