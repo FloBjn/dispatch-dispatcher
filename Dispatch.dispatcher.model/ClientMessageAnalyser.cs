@@ -96,7 +96,18 @@ public class ClientMessageAnalyser
         if (_protocol.ParseDownload(message) is string downloadFile)
         {
             var userWithFiles = _fileManager.GetFileByName(activeClient.Username, downloadFile);
-            var file = userWithFiles.Files.Find(file => file.FileName == downloadFile);
+            if (userWithFiles == null)
+            {
+                Console.WriteLine("[ERREUR] Aucun fichier trouvé pour l'utilisateur.");
+                throw new Exception("Fichier introuvable");
+            }
+
+            var file = userWithFiles.Files.Find(f => f.FileName == downloadFile);
+            if (file == null)
+            {
+                Console.WriteLine("[ERREUR] Fichier demandé non trouvé dans la liste.");
+                throw new Exception("Fichier non trouvé");
+            }
 
             if (file == null)
             {
@@ -105,22 +116,18 @@ public class ClientMessageAnalyser
 
             var hasher = new FileHasher();
             string hashFileName = hasher.HashFileName(activeClient.Username + "_" + file.FileName);
-
-            // TODO: Vérifier que l'utilisateur bien le droit de récupérer ce fichier (qu'il lui appartient)
-
-            // TODO: Récupérer les containers concernés
+            
             List<string> containersId = file.Containers;
 
-            // TODO: Construire la commande GET
             string getCommand = _protocol.BuildGet(hashFileName);
 
-            // TODO: Retourner la tâche
             var task = new TaskItem(TaskItem.TaskType.Receive, TaskItem.TaskStatus.InProgress, downloadFile, getCommand,
                 activeClient.Username,
                 containersId)
             {
                 FileSize = file.Size,
             };
+
             return task;
         }
 
@@ -148,7 +155,6 @@ public class ClientMessageAnalyser
                 file.Containers
             );
         }
-
 
         throw new NotImplementedException("Commande non reconnue ou non implémentée : " + message);
     }
