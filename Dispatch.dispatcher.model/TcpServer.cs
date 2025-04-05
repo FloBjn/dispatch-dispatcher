@@ -53,8 +53,8 @@ public class TcpServer
     {
         using (tcpClient)
         {
-            await using NetworkStream networkStream = tcpClient.GetStream();
-            await using SslStream sslStream = new SslStream(networkStream, false);
+            await using var networkStream = tcpClient.GetStream();
+            await using var sslStream = new SslStream(networkStream, false);
 
             try
             {
@@ -67,17 +67,11 @@ public class TcpServer
 
                 while (tcpClient.Connected)
                 {
-                    byte[] buffer = new byte[ByteBufferSize];
+                    var buffer = new byte[ByteBufferSize];
+                    var bytesRead = await sslStream.ReadAsync(buffer, 0, buffer.Length);
                     
-                    Console.WriteLine("En attente d'un message du client...");
-                    
-                    int bytesRead = await sslStream.ReadAsync(buffer, 0, buffer.Length);
-                    
-                    Console.WriteLine(bytesRead);
-
                     if (bytesRead == 0)
                     {
-                        Console.WriteLine("Connexion avec le client fermée.");
                         break;
                     }
 
@@ -119,7 +113,7 @@ public class TcpServer
                         }
                         else
                         {
-                            TaskItem? taskItem = _messageAnalyser.AnalyseMessage(buffer, bytesRead, activeClient);
+                            var taskItem = _messageAnalyser.AnalyseMessage(buffer, bytesRead, activeClient);
                             if (taskItem != null && OnTaskReceived != null)
                             {
                                 taskItem.CompletionSource = new TaskCompletionSource<string>();
@@ -127,12 +121,10 @@ public class TcpServer
                                 await OnTaskReceived.Invoke(taskItem);
 
                                 var containerResult = await taskItem.CompletionSource.Task;
-                                byte[] responseByte;
-                                string headerByte;
 
                                 if (containerResult == "GET_OK")
                                 {
-                                    (headerByte, responseByte) = _downloadHandler.HandleDownload(taskItem);
+                                    var (headerByte, responseByte) = _downloadHandler.HandleDownload(taskItem);
                                     if (responseByte == null)
                                     {
                                         response = _protocol.BuildDownloadError();
@@ -140,20 +132,20 @@ public class TcpServer
                                     }
                                     else
                                     {
-                                        SendFileAsync(sslStream, headerByte, responseByte);
+                                        await SendFileAsync(sslStream, headerByte, responseByte);
                                     }
                                 }
                                 else
                                 {
                                     response = containerResult switch
-                                                                    {
-                                                                        "POST_OK" => _protocol.BuildSendOk(),
-                                                                        "POST_ERROR" => _protocol.BuildSendError(),
-                                                                        "DELETE_OK" => _protocol.BuildPurgeOk(),
-                                                                        "DELETE_ERROR" => _protocol.BuildPurgeError(),
-                                                                        "GET_ERROR" => _protocol.BuildDownloadError(),
-                                                                        _ => "ERROR"
-                                                                    };
+                                    {
+                                        "POST_OK" => _protocol.BuildSendOk(),
+                                        "POST_ERROR" => _protocol.BuildSendError(),
+                                        "DELETE_OK" => _protocol.BuildPurgeOk(),
+                                        "DELETE_ERROR" => _protocol.BuildPurgeError(),
+                                        "GET_ERROR" => _protocol.BuildDownloadError(),
+                                        _ => "ERROR"
+                                    };
                                 }
                             }
                         }

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Dispatch.dispatcher.model;
+﻿using Dispatch.dispatcher.model;
 
 namespace Dispatch.dispatcher.infrastructure
 {

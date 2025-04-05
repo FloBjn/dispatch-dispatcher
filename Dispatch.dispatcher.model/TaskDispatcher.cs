@@ -15,7 +15,7 @@ public class TaskDispatcher : ITaskDispatcher
     {
         try
         {
-            string result = "";
+            string? result = "";
 
             switch (task.Type)
             {
@@ -33,15 +33,8 @@ public class TaskDispatcher : ITaskDispatcher
                     break;
 
                 case TaskItem.TaskType.Receive:
-                    var response = HandleDownload(task); // TODO: compléter la logique
-                    if (response != "")
-                    {
-                        task.Status = TaskItem.TaskStatus.Completed;
-                    }
-                    else
-                    {
-                        task.Status = TaskItem.TaskStatus.Error;
-                    }
+                    var response = HandleDownload(task);
+                    task.Status = response != "" ? TaskItem.TaskStatus.Completed : TaskItem.TaskStatus.Error;
                     break;
 
                 case TaskItem.TaskType.Delete:
@@ -81,13 +74,13 @@ public class TaskDispatcher : ITaskDispatcher
     }
 
 
-    private string HandleUpload(TaskItem task)
+    private string? HandleUpload(TaskItem task)
     {
-        string response = _fileSender.SendFile(task);
+        string? response = _fileSender.SendFile(task);
         return response;
     }
 
-    private string HandleDownload(TaskItem task)
+    private string? HandleDownload(TaskItem task)
     {
         try
         {

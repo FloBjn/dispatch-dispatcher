@@ -38,7 +38,7 @@ namespace Dispatch.dispatcher.model
                     connection.Connect(_ip, _port);
 
                     // Envoi du header de la tâche
-                    byte[] header = System.Text.Encoding.UTF8.GetBytes(task.Command );
+                    var header = System.Text.Encoding.UTF8.GetBytes(task.Command );
                     connection.SendBytes(header);
                     
                     // Envoi du payload de la tâche
@@ -47,13 +47,13 @@ namespace Dispatch.dispatcher.model
                         connection.SendBytes(task.BinaryPayload);
                     }
                     
-                    string response = connection.ReadLine();
+                    var response = connection.ReadLine();
                     task.Result = response.Trim(); 
                     // On set le résultat de la tâche
                     if (!string.IsNullOrEmpty(task.Result))
                     {
                         // Divise task.Result en deux parties au maximum en utilisant l'espace comme séparateur
-                        var parts = task.Result.Split(new[] { ' ' }, 2);
+                        string?[] parts = task.Result.Split(new[] { ' ' }, 2);
 
                         // Définit le résultat de CompletionSource avec la première partie
                         task.CompletionSource?.SetResult(parts[0]);

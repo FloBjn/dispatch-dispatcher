@@ -35,9 +35,6 @@ namespace Dispatch.dispatcher.model
         private static readonly Regex PurgeRegex = new Regex($"^PURGE{Esp}{Filename}{Eol}$");
         private static readonly Regex CatalogueRegex = new Regex($"^CATALOGUE{Eol}$");
         private static readonly Regex AliveRegex = new Regex($"^ALIVE{Esp}{Domain}{Esp}{Port}{Eol}$");
-        private static readonly Regex PostRegex = new Regex($"^POST{Esp}{InfoFile}{Eol}");
-        private static readonly Regex DeleteRegex = new Regex($"^DELETE{Esp}{HashFilename}{Eol}$");
-        private static readonly Regex GetRegex = new Regex($"^GET{Esp}{HashFilename}{Eol}$");
 
         public static Protocol GetInstance()
         {
@@ -45,7 +42,6 @@ namespace Dispatch.dispatcher.model
         }
         
         // Méthodes de génération des messages
-
         public string BuildCatalogue(string[] fileName, int[] size)
         {
             if (fileName.Length != size.Length)

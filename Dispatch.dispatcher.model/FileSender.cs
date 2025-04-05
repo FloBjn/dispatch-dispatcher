@@ -1,23 +1,16 @@
 ﻿namespace Dispatch.dispatcher.model
 {
-    public class FileSender
+    public class FileSender(TcpContainer tcpContainer)
     {
-        private readonly TcpContainer _tcpContainer;
-
-        public FileSender(TcpContainer tcpContainer)
-        {
-            _tcpContainer = tcpContainer;
-        }
-
         /// <summary>
         /// Envoie une tâche (commande + contenu binaire) à tous les containers.
         /// </summary>
-        public string SendFile(TaskItem task)
+        public string? SendFile(TaskItem task)
         {
             if (string.IsNullOrEmpty(task.Command))
                 throw new ArgumentException("La commande à envoyer est vide !");
 
-            _tcpContainer.SendTaskToAll(task);
+            tcpContainer.SendTaskToAll(task);
 
             // ici, on attend la réponse (synchronisation simple pour l'instant)
             while (string.IsNullOrEmpty(task.Result))
@@ -28,12 +21,12 @@
             return task.Result;
         }
 
-        public string SendTaskAtFirstContainerConnected(TaskItem task)
+        public string? SendTaskAtFirstContainerConnected(TaskItem task)
         {
             if (string.IsNullOrEmpty((task.Command)))
                 throw new ArgumentException("La commande est vide");
                 
-            _tcpContainer.SendTaskAtFirst(task);
+            tcpContainer.SendTaskAtFirst(task);
             
             while (string.IsNullOrEmpty(task.Result))
             {
@@ -45,12 +38,12 @@
         public void SendDeleteToEach(TaskItem task)
         {
             // crée une liste de tâches asynchrones de suppression
-            var tasks = new List<Task<string>>();
+            var tasks = new List<Task<string?>>();
 
             foreach (var containerId in task.ContainerId)
             {
                 // vérifie si le container est actif
-                if (_tcpContainer.TryGetConnection(containerId, out var connection))
+                if (tcpContainer.TryGetConnection(containerId, out var connection))
                 {
                     // crée une tâche de suppression
                     var deleteTask = new TaskItem(

@@ -10,7 +10,7 @@ public class Program
 {
     public static void Main()
     {
-        foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+        foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
         {
             Console.WriteLine($"Name: {nic.Name}");
             Console.WriteLine($"Description: {nic.Description}");
@@ -39,16 +39,16 @@ public class Program
         IFileCatalogManager fileCatalogManager = new FileCatalogManager(config);
         
         // Gestion des utilisateurs
-        ClientMessageAnalyser analyser = new ClientMessageAnalyser(new UserManager(config), fileManager, containerManager);
+        var analyser = new ClientMessageAnalyser(new UserManager(config), fileManager, containerManager);
         
         // Gestion des tasks
-        TaskDispatcher dispatcher = new TaskDispatcher(fileManager, new FileSender(tcpContainer));
-        TaskManager taskManager = new TaskManager(dispatcher);
+        var dispatcher = new TaskDispatcher(fileManager, new FileSender(tcpContainer));
+        var taskManager = new TaskManager(dispatcher);
         
         // Serveur TCP qui écoute les clients
         var server = new TcpServer(config, analyser, new DownloadHandler(fileManager));
         
-        MulticastListener multicastListener = new MulticastListener(config, containerManager, tcpContainer);
+        var multicastListener = new MulticastListener(config, containerManager, tcpContainer);
         
         multicastListener.StartListening();
         

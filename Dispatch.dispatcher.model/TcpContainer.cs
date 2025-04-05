@@ -2,7 +2,7 @@
 {
     public class TcpContainer
     {
-        private readonly Dictionary<string, ContainerConnection> _connections = new();
+        private readonly Dictionary<string, ContainerConnection?> _connections = new();
 
         /// <summary>
         /// Envoie une tâche à tous les Containers actifs en parallèle.
@@ -12,7 +12,6 @@
         {
             foreach (var conn in _connections.Values)
             {
-                Console.WriteLine($"Envoi de la tâche {task.Command} au container {conn.ToString()}");
                 conn.EnqueueTask(task);
             }
         }
@@ -37,7 +36,7 @@
                     taskSent = true;
                     break;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw new InvalidOperationException("Erreur lors de l'envoie");
                 }
@@ -49,7 +48,7 @@
             }
         }
 
-        public bool TryGetConnection(string containerId, out ContainerConnection connection)
+        public bool TryGetConnection(string containerId, out ContainerConnection? connection)
         {
             return _connections.TryGetValue(containerId, out connection);
         }

@@ -26,7 +26,7 @@ public class ContainerManager
     }
     public void StartCleanupTask()
     {
-        Thread cleanupThread = new Thread(() =>
+        var cleanupThread = new Thread(() =>
         {
             while (true)
             {
@@ -43,7 +43,7 @@ public class ContainerManager
     /// <summary>
     /// Nettoie les Containers inactifs.
     /// </summary>
-    public void CleanupInactiveContainers()
+    private void CleanupInactiveContainers()
     {
         lock (_lock)
         {

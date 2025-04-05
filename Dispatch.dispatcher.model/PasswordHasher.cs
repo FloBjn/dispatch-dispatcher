@@ -17,7 +17,7 @@ namespace Dispatch.dispatcher.model
         {
             using (var sha384 = SHA384.Create()) // SHA3-384 en .NET (remplaçant SHA3)
             {
-                byte[] hash = sha384.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var hash = sha384.ComputeHash(Encoding.UTF8.GetBytes(password));
                 return BitConverter.ToString(hash).Replace("-", "").ToLower(); // Conversion en hexadécimal
             }
         }

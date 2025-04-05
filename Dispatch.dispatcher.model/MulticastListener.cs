@@ -34,14 +34,14 @@ public class MulticastListener
     /// </summary>
     public void StartListening()
     {
-        Thread multicastThread = new Thread(async () =>
+        var multicastThread = new Thread(async () =>
         {
             using UdpClient udpClient = new UdpClient
             {
                 ExclusiveAddressUse = false
             };
 
-            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, _multicastPort);
+            var localEndPoint = new IPEndPoint(IPAddress.Any, _multicastPort);
             udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             udpClient.Client.Bind(localEndPoint);
 
@@ -56,7 +56,7 @@ public class MulticastListener
                 return;
             }
 
-            var localIp = GetLocalIPAddress(selectedNic);
+            var localIp = GetLocalIpAddress(selectedNic);
             if (localIp == null)
             {
                 Console.WriteLine($"Impossible d'obtenir l'adresse IP de l'interface {_networkInterfaceName}");
@@ -101,7 +101,7 @@ public class MulticastListener
         multicastThread.Start();
     }
 
-    private static IPAddress? GetLocalIPAddress(NetworkInterface nic)
+    private static IPAddress? GetLocalIpAddress(NetworkInterface nic)
     {
         return nic.GetIPProperties().UnicastAddresses
             .Select(ip => ip.Address)

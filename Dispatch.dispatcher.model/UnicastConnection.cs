@@ -45,12 +45,12 @@ namespace Dispatch.dispatcher.model
 
                     while (hexContentBuilder.Length < expectedHexLength)
                     {
-                        string? line = reader.ReadLine();
+                        var line = reader.ReadLine();
                         if (line == null) break;
                         hexContentBuilder.Append(line.Trim());
                     }
 
-                    string fullMessage = firstLine + "\r\n" + hexContentBuilder;
+                    var fullMessage = firstLine + "\r\n" + hexContentBuilder;
                     Console.WriteLine($"Reception totale : {fullMessage.Length} caractères");
                     return fullMessage;
                 }

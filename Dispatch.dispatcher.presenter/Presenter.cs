@@ -47,8 +47,7 @@ public class Presenter
             return Task.FromResult(_protocol.BuildLoginError());
         }
 
-        _userManager.AddUser(new User
-            { Username = userName, PasswordHash = password, AesKey = AesKeyGenerator.GenerateAesKey() });
+        _userManager.AddUser(new User (userName, password, AesKeyGenerator.GenerateAesKey()));
         return Task.FromResult(_protocol.BuildLoginOk());
     }
 

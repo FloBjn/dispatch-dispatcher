@@ -6,16 +6,12 @@ namespace Dispatch.dispatcher.model;
 public class OurFile
 {
     private readonly MemoryStream _stream = new();  
-    private string _fileName;
-    private int _fileSize;
-    
+    private readonly string _fileName;
+
     public string FileName
     {
-        get
-        {
-            return _fileName;
-        }
-        set
+        get => _fileName;
+        init
         {
             _fileName = value;
             Aad = Encoding.UTF8.GetBytes(_fileName);
@@ -23,14 +19,8 @@ public class OurFile
     }
     
 
-    public int FileSize
-    {
-        get
-        {
-            return _fileSize;
-        }
-        set => _fileSize = value;
-    }
+    public int FileSize { get; set; }
+
     public User User { get; set; }
     
     public byte[] Content => _stream.ToArray();
@@ -47,7 +37,7 @@ public class OurFile
     public OurFile()
     {
         Tag = new byte[16];
-        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+        using (var rng = RandomNumberGenerator.Create())
         {
             Iv = new byte[12];
             rng.GetBytes(Iv);

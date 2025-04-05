@@ -6,20 +6,12 @@ namespace Dispatch.dispatcher.model;
 /// Analyseur de messages clients reçus par le Dispatcher.
 /// Il identifie les commandes `LOGIN`, `REGISTER`, `UPLOAD`, etc. et effectue les actions appropriées.
 /// </summary>
-public class ClientMessageAnalyser
+public class ClientMessageAnalyser(
+    IUserManager userManager,
+    IFileManager fileManager,
+    ContainerManager containerManager)
 {
-    private readonly IUserManager _userManager;
-    private readonly IFileManager _fileManager;
-    private readonly ContainerManager _containerManager;
-
     private readonly Protocol _protocol = Protocol.GetInstance();
-
-    public ClientMessageAnalyser(IUserManager userManager, IFileManager fileManager, ContainerManager containerManager)
-    {
-        _userManager = userManager;
-        _fileManager = fileManager;
-        _containerManager = containerManager;
-    }
 
     /// <summary>
     /// Analyse un message et retourne un TaskItem si applicable.
@@ -33,7 +25,7 @@ public class ClientMessageAnalyser
 
             if (activeClient.CurrentFile.IsComplete())
             {
-                _fileManager.Encrypte(activeClient.CurrentFile, activeClient.CurrentFile.Content);
+                fileManager.Encrypte(activeClient.CurrentFile, activeClient.CurrentFile.Content);
                 var fileHasher = new FileHasher();
                 var (hashFileName, hashFileContent) = fileHasher.HashFile(activeClient.CurrentFile);
 
@@ -46,7 +38,7 @@ public class ClientMessageAnalyser
                     hashFileContent
                 );
 
-                var containers = _containerManager.GetActiveContainers();
+                var containers = containerManager.GetActiveContainers();
                 var containerNames = containers.Select(c => c.Name).ToList();
 
                 var task = new TaskItem(
@@ -77,7 +69,7 @@ public class ClientMessageAnalyser
 
         if (_protocol.ParseUpload(message) is (string fileName, int fileSize))
         {
-            var fullUser = _userManager.GetUserByUsername(activeClient.Username);
+            var fullUser = userManager.GetUserByUsername(activeClient.Username);
             if (fullUser == null)
                 throw new Exception("Utilisateur inconnu");
 
@@ -95,7 +87,7 @@ public class ClientMessageAnalyser
 
         if (_protocol.ParseDownload(message) is string downloadFile)
         {
-            var userWithFiles = _fileManager.GetFileByName(activeClient.Username, downloadFile);
+            var userWithFiles = fileManager.GetFileByName(activeClient.Username, downloadFile);
             var file = userWithFiles.Files.Find(file => file.FileName == downloadFile);
 
             if (file == null)
@@ -126,7 +118,7 @@ public class ClientMessageAnalyser
 
         if (_protocol.ParsePurge(message) is string purgeFile)
         {
-            var userWithFiles = _fileManager.GetFileByName(activeClient.Username, purgeFile);
+            var userWithFiles = fileManager.GetFileByName(activeClient.Username, purgeFile);
             var file = userWithFiles.Files.Find(f => f.FileName == purgeFile);
 
             if (file == null)

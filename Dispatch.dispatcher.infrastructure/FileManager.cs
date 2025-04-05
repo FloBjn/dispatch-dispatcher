@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Dispatch.dispatcher.model;
 
 namespace Dispatch.dispatcher.infrastructure;

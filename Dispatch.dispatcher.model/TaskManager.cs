@@ -5,15 +5,9 @@ namespace Dispatch.dispatcher.model;
 /// <summary>
 /// Gère la file de tâches et le thread principal qui les délègue aux bons exécuteurs.
 /// </summary>
-public class TaskManager
+public class TaskManager(ITaskDispatcher dispatcher)
 {
     private readonly BlockingCollection<TaskItem> _taskQueue = new();
-    private readonly ITaskDispatcher _dispatcher;
-
-    public TaskManager(ITaskDispatcher dispatcher)
-    {
-        _dispatcher = dispatcher;
-    }
 
     /// <summary>
     /// Lance le thread principal de traitement des tâches.
@@ -27,7 +21,7 @@ public class TaskManager
                 try
                 {
                     var task = _taskQueue.Take(token);
-                    _dispatcher.Dispatch(task);
+                    dispatcher.Dispatch(task);
                 }
                 catch (OperationCanceledException)
                 {

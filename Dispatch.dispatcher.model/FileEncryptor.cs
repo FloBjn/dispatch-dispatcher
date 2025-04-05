@@ -14,8 +14,8 @@ public class FileEncryptor
     {
         using var aesGcm = new AesGcm(aesKey);
         
-        byte[] encryptedText = new byte[plaintext.Length];
-        byte[] tag = new byte[16]; // 128 bits
+        var encryptedText = new byte[plaintext.Length];
+        var tag = new byte[16]; // 128 bits
 
         aesGcm.Encrypt(iv, plaintext, encryptedText, tag, aad);
 

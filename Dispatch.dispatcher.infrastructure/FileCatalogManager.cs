@@ -2,19 +2,8 @@ using Dispatch.dispatcher.model;
 
 namespace Dispatch.dispatcher.infrastructure;
 
-public class FileCatalogManager : IFileCatalogManager
+public class FileCatalogManager(Config config) : IFileCatalogManager
 {
-
-    /// <summary>
-    /// Liste des infos des fichiers du catalogue chargés depuis le fichier config JSON.
-    /// </summary>
-    private readonly Config _config;
-
-    public FileCatalogManager(Config config)
-    {
-        _config = config;
-    }
-
     public List<StoredFile> LoadCatalog(string connectedUser)
     {
         try

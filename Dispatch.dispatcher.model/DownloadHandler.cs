@@ -5,17 +5,18 @@ namespace Dispatch.dispatcher.model;
 public class DownloadHandler(IFileManager fileManager)
 {
     private readonly Protocol _protocol = Protocol.GetInstance();
-    private readonly IFileManager _fileManager = fileManager;
 
     public (string, byte[]) HandleDownload(TaskItem taskItem)
     {
-        byte[] response;
         string header;
         // TODO : récupéré les outils de décryptage
-        var userWithFiles = _fileManager.GetFileByName(taskItem.UserName, taskItem.FileName);
-        var iv = userWithFiles.Files.Find(f => f.FileName == taskItem.FileName)?.Iv;
-        var aad = userWithFiles.Files.Find(f => f.FileName == taskItem.FileName)?.Aad;
-        var tag = userWithFiles.Files.Find(f => f.FileName == taskItem.FileName)?.Tag;
+        var userWithFiles = fileManager.GetFileByName(taskItem.UserName, taskItem.FileName);
+
+        var file = userWithFiles.Files.Find(f => f.FileName == taskItem.FileName);
+        
+        var iv = file?.Iv;
+        var aad = file?.Aad;
+        var tag = file?.Tag;
 
         // TODO : décrypter le fichier
         var resultLines = taskItem.Result.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
