@@ -45,7 +45,8 @@ public class ClientHandler
                 var options = new SslServerAuthenticationOptions
                 {
                     ServerCertificate = _serverCertificate,
-                    EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls13
+                    //EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls13
+
                 };
 
                 await sslStream.AuthenticateAsServerAsync(options);

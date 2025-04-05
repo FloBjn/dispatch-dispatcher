@@ -66,7 +66,6 @@ public class TaskMessageHandler : IMessageHandler
 
         if (task == null)
         {
-            Console.WriteLine("[COMMAND] Aucune tâche créée par AnalyseMessage.");
             return null;
         }
 
