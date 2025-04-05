@@ -24,6 +24,6 @@ public class SayonaraMessageHandler : IMessageHandler
             Console.WriteLine("Client inconnu a fermé la connexion.");
         }
 
-        return null; // Pas besoin d’envoyer de réponse dans ce cas
+        return null; 
     }
 }

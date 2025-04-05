@@ -1,107 +1,121 @@
-﻿namespace Dispatch.dispatcher.model
+﻿namespace Dispatch.dispatcher.model;
+
+public class FileSender
 {
-    public class FileSender
+    private readonly TcpContainer _tcpContainer;
+
+    public FileSender(TcpContainer tcpContainer)
     {
-        private readonly TcpContainer _tcpContainer;
+        _tcpContainer = tcpContainer;
+    }
 
-        public FileSender(TcpContainer tcpContainer)
+    /// <summary>
+    /// Envoie une tâche à tous les containers et attend une réponse.
+    /// </summary>
+    public string SendFile(TaskItem task)
+    {
+        EnsureCommandPresent(task);
+
+        _tcpContainer.SendTaskToAll(task);
+
+        return WaitForResult(task);
+    }
+
+    /// <summary>
+    /// Envoie une tâche à un seul container (le premier disponible).
+    /// </summary>
+    public string SendTaskAtFirstContainerConnected(TaskItem task)
+    {
+        EnsureCommandPresent(task);
+
+        _tcpContainer.SendTaskAtFirst(task);
+
+        return WaitForResult(task);
+    }
+
+    /// <summary>
+    /// Envoie une commande DELETE à chaque container concerné et attend les réponses.
+    /// </summary>
+    public void SendDeleteToEach(TaskItem task)
+    {
+        var subTasks = new List<Task<string>>();
+
+        foreach (var containerId in task.ContainerId)
         {
-            _tcpContainer = tcpContainer;
-        }
-
-        /// <summary>
-        /// Envoie une tâche (commande + contenu binaire) à tous les containers.
-        /// </summary>
-        public string SendFile(TaskItem task)
-        {
-            if (string.IsNullOrEmpty(task.Command))
-                throw new ArgumentException("La commande à envoyer est vide !");
-
-            _tcpContainer.SendTaskToAll(task);
-
-            // ici, on attend la réponse (synchronisation simple pour l'instant)
-            while (string.IsNullOrEmpty(task.Result))
+            if (_tcpContainer.TryGetConnection(containerId, out var connection))
             {
-                Thread.Sleep(10); // ou mieux : une Task avec WaitHandle si on a le temps (plus propre)
+                var subTask = CreateDeleteSubTask(task, containerId);
+                subTasks.Add(subTask.CompletionSource.Task);
+                connection.EnqueueTask(subTask);
             }
-
-            return task.Result;
-        }
-
-        public string SendTaskAtFirstContainerConnected(TaskItem task)
-        {
-            if (string.IsNullOrEmpty((task.Command)))
-                throw new ArgumentException("La commande est vide");
-                
-            _tcpContainer.SendTaskAtFirst(task);
-            
-            while (string.IsNullOrEmpty(task.Result))
+            else
             {
-                Thread.Sleep(10);
+                Console.WriteLine($"[Delete] Container non connecté : {containerId}");
             }
-            return task.Result;
         }
 
-        public void SendDeleteToEach(TaskItem task)
+        Task.Run(async () =>
         {
-            // crée une liste de tâches asynchrones de suppression
-            var tasks = new List<Task<string>>();
-
-            foreach (var containerId in task.ContainerId)
+            try
             {
-                // vérifie si le container est actif
-                if (_tcpContainer.TryGetConnection(containerId, out var connection))
+                var results = await Task.WhenAll(subTasks);
+
+                if (results.All(r => r == "DELETE_OK"))
                 {
-                    // crée une tâche de suppression
-                    var deleteTask = new TaskItem(
-                        TaskItem.TaskType.Delete,
-                        TaskItem.TaskStatus.InProgress,
-                        task.FileName,
-                        task.Command,
-                        task.UserName,
-                        new List<string> { containerId }
-                    )
-                    {
-                        CompletionSource =
-                            new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously)
-                    };
-                    // ajoute la tâche de suppression à la liste
-                    tasks.Add(deleteTask.CompletionSource.Task);
-                    // envoie la tâche de suppression au container
-                    connection.EnqueueTask(deleteTask);
+                    task.Status = TaskItem.TaskStatus.Completed;
+                    task.CompletionSource?.TrySetResult("DELETE_OK");
                 }
                 else
                 {
-                    Console.WriteLine($"Aucune connexion trouvée pour le containerId : {containerId}");
+                    task.Status = TaskItem.TaskStatus.Error;
+                    task.CompletionSource?.TrySetResult("DELETE_ERROR");
                 }
             }
-            
-            // Nouvelle tâche en arrière-plan pour attendre les résultats
-            Task.Run(async () =>
+            catch (Exception ex)
             {
-                try
-                {
-                    // attend la fin de toutes les tâches de suppression
-                    var results = await Task.WhenAll(tasks);
-                    
-                    // verifie si toutes les tâches de suppression ont fonctionnées
-                    if (results.All(r => r == "DELETE_OK"))
-                    {
-                        task.CompletionSource?.SetResult("DELETE_OK");
-                        task.Status = TaskItem.TaskStatus.Completed;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Certaines tâches de suppression ont échoué.");
-                        task.CompletionSource?.SetResult("DELETE_ERROR");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erreur lors de l'attente des suppressions : {ex.Message}");
-                    task.CompletionSource?.SetResult("DELETE_ERROR");
-                }
-            });
+                Console.WriteLine($"[Delete] Erreur : {ex.Message}");
+                task.Status = TaskItem.TaskStatus.Error;
+                task.CompletionSource?.TrySetResult("DELETE_ERROR");
+            }
+        });
+    }
+
+    private string WaitForResult(TaskItem task, int timeoutMs = 5000)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
+        while (string.IsNullOrEmpty(task.Result))
+        {
+            if (sw.ElapsedMilliseconds > timeoutMs)
+            {
+                Console.WriteLine("[FileSender] Timeout : pas de réponse du container.");
+                return "TIMEOUT";
+            }
+
+            Thread.Sleep(10);
         }
+
+        return task.Result;
+    }
+
+    private void EnsureCommandPresent(TaskItem task)
+    {
+        if (string.IsNullOrEmpty(task.Command))
+            throw new ArgumentException("Commande vide !");
+    }
+
+    private TaskItem CreateDeleteSubTask(TaskItem parent, string containerId)
+    {
+        return new TaskItem(
+            TaskItem.TaskType.Delete,
+            TaskItem.TaskStatus.InProgress,
+            parent.FileName,
+            parent.Command,
+            parent.UserName,
+            new List<string> { containerId }
+        )
+        {
+            CompletionSource = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously)
+        };
     }
 }
