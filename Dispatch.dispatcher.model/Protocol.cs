@@ -25,7 +25,6 @@ namespace Dispatch.dispatcher.model
         private const string Size = $"(?<size>[0-9]{{1,10}})";
         private const string HashFilename = $"(?<hash_filename>{Hash})";
         private const string HashFileContent = $"(?<hash_filecontent>{Hash})";
-        private const string InfoFile = $"{HashFilename}{Esp}{Size}{Esp}{HashFileContent}";
 
         // Expressions régulières pour chaque type de message
         private static readonly Regex LoginRegex = new Regex($"^LOGIN{Esp}{Username}{Esp}{Password}{Eol}$");
@@ -35,10 +34,8 @@ namespace Dispatch.dispatcher.model
         private static readonly Regex PurgeRegex = new Regex($"^PURGE{Esp}{Filename}{Eol}$");
         private static readonly Regex CatalogueRegex = new Regex($"^CATALOGUE{Eol}$");
         private static readonly Regex AliveRegex = new Regex($"^ALIVE{Esp}{Domain}{Esp}{Port}{Eol}$");
-        private static readonly Regex PostRegex = new Regex($"^POST{Esp}{InfoFile}{Eol}");
-        private static readonly Regex DeleteRegex = new Regex($"^DELETE{Esp}{HashFilename}{Eol}$");
-        private static readonly Regex GetRegex = new Regex($"^GET{Esp}{HashFilename}{Eol}$");
-
+        private static readonly Regex SayonaraRegex = new Regex($"^SAYONARA{Eol}$");
+        
         public static Protocol GetInstance()
         {
             return _instance ??= new Protocol();
@@ -129,6 +126,12 @@ namespace Dispatch.dispatcher.model
             Match match = AliveRegex.Match(message);
             return match.Success ? (match.Groups["domain"].Value, int.Parse(match.Groups["port"].Value)) : null;
         }
+        
+        public bool ParseSayonara(string message)
+        {
+            Match match = SayonaraRegex.Match(message);
+            return match.Success ? true : false;
+        }
 
         private static bool IsValid(string value, string pattern) => Regex.IsMatch(value, $"^{pattern}$");
 
@@ -167,8 +170,7 @@ namespace Dispatch.dispatcher.model
         {
             return "DOWNLOAD_ERROR\r\n";
         }
-
-        public string BuildDownloadOk(string fileName, int fileSize, byte[] fileContent)
+        public string BuildDownloadOk(string fileName, int fileSize)
         {
             return $"DOWNLOAD_OK {fileName} {fileSize}\r\n"; 
         }

@@ -10,6 +10,7 @@ public class Program
 {
     public static void Main()
     {
+        Console.WriteLine("Choisissez l'interface réseau parmi celles-ci :");
         foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
         {
             Console.WriteLine($"Name: {nic.Name}");
