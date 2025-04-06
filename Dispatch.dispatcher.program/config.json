@@ -26,25 +26,6 @@
           "Containers": ["container_1"]
         }
       ]
-    },
-    {
-      "User": {
-        "Username": "ouioui",
-        "PasswordHash": "68308ed375ecac1b1df1f88565919e4f599824e965ba59ae8d8af65604a96ca184600b638ab22311e3a3db60d4f5ab11",
-        "AesKey": "qby8J0Gqbae2RYyhAJu/VFBSYI7gdZOqvr1Ow57Iu2M="
-      },
-      "Files": [
-        {
-          "FileName": "fichier01.txt",
-          "Size": 20,
-          "Containers": ["container_1"]
-        },
-        {
-          "FileName": "fichier02.txt",
-          "Size": 30,
-          "Containers": ["container_1"]
-        }
-      ]
     }
   ]
 }
