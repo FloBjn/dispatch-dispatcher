@@ -12,7 +12,7 @@ public class ClientHandler
     private readonly DownloadHandler _downloadHandler;
     private readonly X509Certificate2 _serverCertificate;
 
-    private const int ByteBufferSize = 4096;
+    private const int ByteBufferSize = 1024;
 
     public event Func<TaskItem, Task<string>>? OnTaskReceived;
     public event Func<string, string, Task<string>> OnLoginReceived;
@@ -45,8 +45,7 @@ public class ClientHandler
                 var options = new SslServerAuthenticationOptions
                 {
                     ServerCertificate = _serverCertificate,
-                    //EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls13
-
+                    EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls13
                 };
 
                 await sslStream.AuthenticateAsServerAsync(options);
@@ -65,7 +64,6 @@ public class ClientHandler
                 while (tcpClient.Connected)
                 {
                     byte[] buffer = new byte[ByteBufferSize];
-
                     int bytesRead = await sslStream.ReadAsync(buffer, 0, buffer.Length);
 
                     if (bytesRead == 0)
@@ -74,28 +72,40 @@ public class ClientHandler
                         break;
                     }
 
-                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     string? response = null;
                     bool handled = false;
 
-                    foreach (var handler in _handlers)
+                    if (context.Client?.AwaitingUploadContent == true)
                     {
-                        if (handler.CanHandle(message))
+                        foreach (var handler in _handlers)
                         {
-                            response = await handler.HandleAsync(context, message);
-                            handled = true;
-
-                            if (!tcpClient.Connected)
-                                return;
-
-                            break;
+                            if (handler is TaskMessageHandler taskHandler)
+                            {
+                                response = await taskHandler.HandleBinaryAsync(context, buffer, bytesRead);
+                                handled = true;
+                                break;
+                            }
                         }
                     }
-
-                    if (!handled)
+                    else
                     {
-                        Console.WriteLine($"[UNHANDLED MESSAGE] : {message}");
-                        response = "COMMAND_NOT_SUPPORTED\r\n";
+                        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                        foreach (var handler in _handlers)
+                        {
+                            if (handler.CanHandle(message))
+                            {
+                                response = await handler.HandleAsync(context, message);
+                                handled = true;
+                                break;
+                            }
+                        }
+
+                        if (!handled)
+                        {
+                            Console.WriteLine($"[UNHANDLED MESSAGE] : {message}");
+                            response = "COMMAND_NOT_SUPPORTED\r\n";
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(response))
