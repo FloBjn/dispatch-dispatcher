@@ -127,6 +127,7 @@ public class ClientMessageAnalyser
             {
                 FileSize = file.Size,
             };
+            
 
             return task;
         }

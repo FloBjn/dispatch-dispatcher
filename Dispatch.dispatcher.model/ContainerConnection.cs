@@ -41,7 +41,20 @@ public class ContainerConnection
                 Console.WriteLine($"[ContainerConnection:{_name}] Connexion établie avec {_ip}:{_port}");
 
                 SendCommandHeader(connection, task);
-                SendOptionalPayload(connection, task);
+
+                if (task.BinaryPayload is { Length: > 0 })
+                {
+                    var ack = connection.ReadLine()?.Trim();
+                    if (ack != "READY")
+                    {
+                        Console.WriteLine($"[ContainerConnection:{_name}] Réponse inattendue : {ack}");
+                        task.CompletionSource?.TrySetResult("POST_ERROR");
+                        connection.Disconnect();
+                        continue;
+                    }
+
+                    SendOptionalPayload(connection, task);
+                }
 
                 var response = connection.ReadLine()?.Trim();
 
