@@ -9,19 +9,19 @@ public class FileHasher
     {
 
         string composite = $"{file.User.Username}_{file.FileName}";
-        string hashFileName = ComputeSha384Hex(Encoding.UTF8.GetBytes(composite));
-        string hashFileContent = ComputeSha384Hex(file.EncryptedContent);
+        string hashFileName = ComputeSha3384Hex(Encoding.UTF8.GetBytes(composite));
+        string hashFileContent = ComputeSha3384Hex(file.EncryptedContent);
 
         return (hashFileName, hashFileContent);
     }
 
 
-    private string ComputeSha384Hex(byte[] data)
+    private string ComputeSha3384Hex(byte[] data)
     {
-        using var sha384 = SHA384.Create();
+        using var sha384 = SHA3_384.Create();
         byte[] hash = sha384.ComputeHash(data);
-        return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        return Convert.ToHexString(hash).Replace("-", "").ToLower();
     }
 
-    public string HashFileName(string fileFileName) => ComputeSha384Hex(Encoding.UTF8.GetBytes(fileFileName));
+    public string HashFileName(string fileFileName) => ComputeSha3384Hex(Encoding.UTF8.GetBytes(fileFileName));
 }

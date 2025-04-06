@@ -15,10 +15,10 @@ namespace Dispatch.dispatcher.model
         /// <returns>Le hachage SHA3-384 du mot de passe sous forme de chaîne hexadécimale.</returns>
         public static string HashPassword(string password)
         {
-            using (var sha384 = SHA384.Create()) 
+            using (var sha3384 = SHA3_384.Create()) 
             {
-                byte[] hash = sha384.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return BitConverter.ToString(hash).Replace("-", "").ToLower(); // Conversion en hexadécimal
+                byte[] hash = sha3384.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToHexString(hash).Replace("-", "").ToLower(); // Conversion en hexadécimal
             }
         }
     }
