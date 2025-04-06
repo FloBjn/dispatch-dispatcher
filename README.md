@@ -123,11 +123,8 @@ network_interface=eth0
 | regex        | 1.10        |
 | lazy_static  | 1.5.0       |
 | ini          | 1.3.0       |
-| get_if_addrs | 0.5         |
-| socket2      | 0.4         |
 | sha3         | 0.11.0-pre.5|
 | hex          | 0.4.3       |
-| sha2         | 0.11.0-pre.5|
 
 ### Prompts IA
 #### Prompt 1
@@ -236,4 +233,94 @@ Exemple en Rust avec socket2 ou les fonctions bas niveau de std::net, où tu peu
 
 Utilité :
 Très utile, car cela m’a permis de comprendre comment contraindre Rust à utiliser une interface réseau précise pour le multicast. C’est crucial dans mon projet où plusieurs interfaces sont disponibles (loopback, Wi-Fi, Ethernet). Grâce à cet échange, j’ai pu stabiliser la communication entre mes applications sur le réseau réel et éviter que les paquets restent en local.
+```
+#### Prompt 7
+```
+Question :
+Comment je peux extraire d'une List en c# contenant des objets qui possèdent deux attributs (un qui est un string et l'autre un int) en deux tableaux, un qui contient tout les attributs string des objets et l'autre contenant tout les attribut int 
+
+Réponse :
+Tu peux utiliser LINQ en C# pour extraire les attributs de tes objets et les stocker dans deux tableaux séparés. Voici comment faire :
+Explication :
+Select(o => o.Nom).ToArray() → Récupère uniquement les noms sous forme de tableau.
+Select(o => o.Valeur).ToArray() → Récupère uniquement les valeurs sous forme de tableau.
+.ToArray() → Convertit le résultat en tableau (string[] et int[]).
+
+Utilité :
+Je ne connaissais pas Select, ça m'a aidée pour éviter de faire des boucles for indigestes.
+```
+#### Prompt 8
+```
+Question :
+Une erreur me dit "the method read_to_end exists for enum Result<File, Error>, but its trait bounds were not satisfied" "method cannot be called on Result<File, Error> due to unsatisfied trait bounds"
+que faire ? [Code essai de get_file]
+
+Réponse :
+L'erreur vient du fait que la variable file est un Result<File, Error>, et que read_to_end est une méthode de File, pas de Result<File, Error>.
+
+Correction
+Tu dois d'abord gérer le Result correctement avant d'appeler read_to_end. Voici une version corrigée de ton code : [version du code qui ressemble à la version finale]
+Explication des corrections :
+Gestion des erreurs : On utilise match pour gérer File::open, read_to_end, et String::from_utf8 afin d'éviter les plantages en cas d'erreur.
+
+Déballage sécurisé (unwrap supprimé) : On remplace unwrap() par des match pour éviter les panics.
+
+Simplification : On retourne directement en cas d'erreur pour éviter des traitements inutiles.
+
+Utilité :
+J'ai utilisé les match a chaque variable pour détecter les erreurs, cela m'a été utile pour les débugs.
+```
+#### Prompt 9
+```
+Question :
+Le contenu de mon fichier est chiffré avec une clé AES et je veux récupérer ce contenu chiffré tel quel, peux-tu adapter le code en connaissant cette information ?
+
+Réponse :
+D'accord ! Si le fichier contient des données chiffrées avec AES, alors le contenu n'est pas du texte, mais des données brutes qu'il faut lire sans interprétation.
+
+Dans ce cas, la conversion en UTF-8 ou UTF-16 est inutile et peut corrompre les données. Il faut donc conserver les octets tels quels et les renvoyer sous une forme adaptée (par exemple, en base64 pour éviter des problèmes d'affichage).
+
+Utilité :
+Inutile parce qu'on ne peut pas utiliser Base64
+```
+#### Prompt 10
+```
+Question :
+Je ne suis pas autorisé de transmettre ce fichier sous forme textuelle
+(encodé en base 64 par exemple), il doit être envoyé en binaire
+
+Réponse :
+Si tu ne peux pas transmettre le fichier sous forme textuelle (Base64 interdit), alors tu dois envoyer les données brutes en binaire, même si la réponse est censée être une String.
+
+📌 Solution : Convertir les octets en String sous forme hexadécimale (hex)
+
+Cela permet d’envoyer uniquement des caractères ASCII valides.
+
+Facile à décoder en C# en byte[].
+
+Respecte la contrainte de transmission binaire sans passer par Base64.
+
+// Encodage en hexadécimal (chaîne ASCII)
+   let encoded_content = encode(&content);
+
+Pourquoi utiliser l'encodage hexadécimal ?
+✅ Respecte la contrainte de transmission "binaire" sans passer par un format textuel comme Base64
+✅ Uniquement des caractères ASCII valides (0-9, A-F)
+✅ Facilement convertible en byte[] en C#
+✅ Évite tout problème d'encodage UTF-8 ou UTF-16
+
+
+Utilité :
+Solution utilisée, car facile a transmettre dans un message et convertible côté c#
+```
+#### Prompt 11
+```
+Question :
+Remplacer l'existant par du SHA3-384 ? [Extrait de code FileHasher]
+
+Réponse :
+Oui, tu peux remplacer l'utilisation de SHA-384 (SHA-2) par SHA3-384 assez simplement. En .NET, tu peux utiliser la classe SHA3Managed de BouncyCastle ou un autre package tiers, car le framework .NET ne propose pas SHA3-384 nativement (jusqu’à .NET 8 en tout cas).
+
+Utilité :
+Je n'ai pas utilisée cette solution car ça existe déjà en c#. J'ai passé du temps à débug et chercher une autre solution pour me rendre compte que c'était ma version de Windows qui n'était pas assez récente.
 ```
