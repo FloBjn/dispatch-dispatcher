@@ -142,7 +142,7 @@ Utilité:
 Au final SHA3-384 existe en CSharp dans la lib Cryptography, donc l'unitilité est nule...
 ```
 
-#### prompt2:
+#### Prompt 2
 ```
 Demande:
 je dois sécurisé des échanges entre deux application grâce à TLS version 1.3 minimum... Comment savoir si cette condition est respectée (condition : version >= 1.3) ?
@@ -157,7 +157,7 @@ Ajoute un SslServerAuthenticationOptions pour définir explicitement TLS 1.3 min
 Utilité:
 Il m'a permis de spécifié la version minimum que le disaptcher acceptera de TLS... Dès lors l'utilité a été parfaite, réponse rapide, efficace, ...
 ```
-#### prompt3:
+#### Prompt 3
 ```
 Demande:
 Salut, j'ai une question, j'ai compris l'histoire du TLS et tout, et j'arrive à m'y connecté, mais je n'avais pas encore ajouté la condition que TLS doit être >= à la version 1.3, mais de 1 il n'existe pas de version suppérieur à 1.3 et en CSHarp je ne sais pas comment faire pour dire qu'il peut etre suppérieur ou égal à une version...
@@ -170,7 +170,7 @@ Mais attention, ServicePointManager ne fonctionne pas avec SslStream, donc si tu
 Utilité:
 utilité nulle car au final c'était un problème de compatibilité entre TLS1.3 et windows 10...
 ```
-#### Prompt4:
+#### Prompt 4
 ```
 Demande:
 génère moi une méthode permettant de crypter un fichier en aes256 en mode AES GCM en c# en se basant sur un tableau de bytes et la clé aes.
