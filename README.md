@@ -16,6 +16,7 @@ Les Containers (connectés en TCP) qui gèrent les fichiers.
 
 ## Compilation et exécution
 
+! L'interface réseau du côté dispatcher sont affiché à l'exécution du programme, il faut ensuite la mettre dans le fichier config.
 ### .NET
 ```bash
 # Compilation
