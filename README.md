@@ -19,10 +19,11 @@ Les Containers (connectés en TCP) qui gèrent les fichiers.
 ### .NET
 ```bash
 # Compilation
-
+dotnet build
 
 # Exécution
-
+cd .\Dispatch.dispatcher.program\
+dotnet run
 ```
 
 ### RUST
